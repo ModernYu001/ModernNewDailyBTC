@@ -1,0 +1,1 @@
+{"snapshot_at":"2026-05-02T00:00:00Z","model_used":"subagent_inline","forecasts":{"horizon_1h":{"low":77818,"high":78793,"probability_up":0.65},"horizon_4h":{"low":77429,"high":79182,"probability_up":0.62},"horizon_1d":{"low":76600,"high":80011,"probability_up":0.58}},"actual_close_at_t_plus_1h":null,"actual_close_at_t_plus_4h":null,"actual_close_at_t_plus_1d":null}

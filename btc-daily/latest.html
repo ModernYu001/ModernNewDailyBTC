@@ -1,629 +1,488 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>BTC 每日 Dashboard · 2026-05-02</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC 每日 Dashboard - 2026-05-02</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #0a0a0a;
-    --panel: #141414;
-    --panel-2: #1c1c1c;
-    --border: #2a2a2a;
-    --text: #e5e7eb;
-    --muted: #9ca3af;
-    --orange: #f7931a;
-    --green: #22c55e;
-    --red: #ef4444;
-    --purple: #a855f7;
-    --blue: #3b82f6;
-  }
-  html, body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: "Microsoft JhengHei", "PingFang TC", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", system-ui, -apple-system, sans-serif;
-    font-size: 14px;
-  }
-  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
-  .chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 11px; line-height: 18px; }
-  .chip-high { background: rgba(239,68,68,.15); color: #fca5a5; border: 1px solid rgba(239,68,68,.3); }
-  .chip-medium { background: rgba(247,147,26,.15); color: #fcd34d; border: 1px solid rgba(247,147,26,.3); }
-  .chip-low { background: rgba(156,163,175,.12); color: #cbd5e1; border: 1px solid rgba(156,163,175,.25); }
-  .chip-good { background: rgba(34,197,94,.15); color: #86efac; border: 1px solid rgba(34,197,94,.3); }
-  .chip-purple { background: rgba(168,85,247,.18); color: #d8b4fe; border: 1px solid rgba(168,85,247,.35); }
-  .signal-light { width: 12px; height: 12px; border-radius: 999px; display: inline-block; box-shadow: 0 0 6px currentColor; }
-  .progress { height: 8px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
-  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--purple), #c084fc); border-radius: 999px; transition: width .3s; }
-  details > summary { cursor: pointer; list-style: none; }
-  details > summary::-webkit-details-marker { display: none; }
-  .scrollbar { scrollbar-width: thin; scrollbar-color: #444 transparent; }
-  .badge-tier { font-size: 10px; padding: 1px 6px; border-radius: 4px; background: rgba(255,255,255,.06); color: var(--muted); border: 1px solid var(--border); }
-  pre { white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
-  @media (max-width: 480px) {
-    .grid-mobile-1 { grid-template-columns: 1fr !important; }
-  }
-  .narrative-section { white-space: pre-wrap; line-height: 1.7; }
+:root{--bg:#0a0a0a;--card:#171717;--card2:#1f1f1f;--bd:#2a2a2a;--text:#e5e5e5;--mute:#a3a3a3;
+--orange:#f7931a;--green:#22c55e;--red:#ef4444;--purple:#a855f7;--blue:#3b82f6;--yellow:#eab308;}
+*{box-sizing:border-box;}
+html,body{background:var(--bg);color:var(--text);font-family:"Microsoft JhengHei","PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:0;}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:16px;}
+.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#262626;padding:2px 6px;border-radius:4px;font-size:12px;}
+.dot{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:6px;}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;}
+.collapsible{cursor:pointer;user-select:none;}
+.hidden{display:none;}
+.scroll-x{overflow-x:auto;}
+details>summary{cursor:pointer;color:var(--mute);font-size:13px;padding:6px 0;list-style:none;}
+details>summary::before{content:"▶ ";display:inline-block;transition:transform .2s;}
+details[open]>summary::before{transform:rotate(90deg);}
+.bar-bg{background:#262626;border-radius:999px;height:8px;overflow:hidden;}
+.bar-fg{height:100%;border-radius:999px;}
+@media(max-width:480px){.hide-sm{display:none!important;}}
 </style>
 </head>
-<body class="min-h-screen">
-<div id="app" class="max-w-7xl mx-auto px-4 py-6">
+<body class="p-3 md:p-6">
+<div class="max-w-7xl mx-auto space-y-4">
 
-  <!-- TOP HEADER -->
-  <header class="panel p-5 mb-5">
-    <div class="flex flex-wrap items-start justify-between gap-4">
+<!-- Module 1 -->
+<section class="card">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+    <div class="flex items-center gap-4">
       <div>
-        <div class="flex items-center gap-3">
-          <div class="text-3xl" style="color: var(--orange);">₿</div>
-          <h1 class="text-2xl font-semibold">BTC 每日 Dashboard</h1>
-          <span class="chip chip-purple" id="regime-chip"></span>
-        </div>
-        <div class="mt-2 text-sm" style="color: var(--muted);" id="headline-text"></div>
-      </div>
-      <div class="text-right">
-        <div class="text-xs" style="color: var(--muted);">BTCUSD-INDEX</div>
-        <div class="text-3xl font-bold" id="price-now"></div>
-        <div class="text-sm" id="price-change"></div>
-        <div class="text-xs mt-2" style="color: var(--muted);">生成於 <span id="as-of"></span></div>
-        <div class="text-xs" style="color: var(--muted);">覆蓋窗口 <span id="data-window"></span></div>
-      </div>
-    </div>
-  </header>
-
-  <!-- INTEGRATION SECTION -->
-  <section class="panel p-5 mb-5">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="text-lg font-semibold">整合洞察</h2>
-      <button onclick="document.getElementById('dq-modal').classList.toggle('hidden')" class="text-xs px-3 py-1 rounded border" style="border-color:var(--border); color: var(--muted);">資料品質</button>
-    </div>
-    <div id="key-insights" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 grid-mobile-1"></div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 grid-mobile-1">
-      <!-- Signal Alignment 5 lights -->
-      <div class="panel p-4 col-span-2" style="background: var(--panel-2);">
-        <div class="text-sm font-semibold mb-3">訊號對齊燈號</div>
-        <div id="signal-lights" class="space-y-2"></div>
-      </div>
-      <!-- Prediction Alignment -->
-      <div class="panel p-4" style="background: var(--panel-2); border-color: var(--purple);">
-        <div class="text-sm font-semibold mb-2" style="color: var(--purple);">預測對齊</div>
-        <div id="pred-align"></div>
-      </div>
-    </div>
-
-    <div class="mt-4">
-      <div class="text-sm font-semibold mb-2">Watch List</div>
-      <ul id="watch-list" class="space-y-2 text-sm"></ul>
-    </div>
-  </section>
-
-  <!-- MARKET SECTION (Agent 1) -->
-  <section class="panel p-5 mb-5">
-    <h2 class="text-lg font-semibold mb-3" style="color: var(--orange);">市場分析（Agent 1）</h2>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 grid-mobile-1">
-      <!-- Left: 4h chart -->
-      <div class="panel p-4" style="background: var(--panel-2);">
-        <div class="text-sm font-semibold mb-2">4h K 線（最末根虛線=未收盤）</div>
-        <div style="height: 280px; position: relative;"><canvas id="kline-chart"></canvas></div>
-        <div class="text-xs mt-2" style="color: var(--muted);" id="kline-note"></div>
-      </div>
-      <!-- Right: stack of cards -->
-      <div class="space-y-3">
-        <div class="grid grid-cols-2 gap-3">
-          <div class="panel p-3" style="background: var(--panel-2);">
-            <div class="text-xs" style="color: var(--muted);">Basis</div>
-            <div class="text-lg font-semibold" id="basis-pct"></div>
-            <div class="text-xs" id="basis-signal"></div>
-          </div>
-          <div class="panel p-3" style="background: var(--panel-2);">
-            <div class="text-xs" style="color: var(--muted);">Depth Ratio</div>
-            <div class="text-lg font-semibold" id="depth-ratio"></div>
-            <div class="text-xs" id="depth-signal"></div>
-          </div>
-          <div class="panel p-3" style="background: var(--panel-2);">
-            <div class="text-xs" style="color: var(--muted);">Taker 買賣比</div>
-            <div class="text-lg font-semibold" id="taker-ratio"></div>
-            <div class="text-xs" id="taker-signal"></div>
-          </div>
-          <div class="panel p-3" style="background: var(--panel-2);">
-            <div class="text-xs" style="color: var(--muted);">Open Interest</div>
-            <div class="text-lg font-semibold" id="oi-usd"></div>
-            <div class="text-xs" id="oi-btc"></div>
-          </div>
-        </div>
-        <!-- Large Trades -->
-        <div class="panel p-3" style="background: var(--panel-2);">
-          <div class="text-xs" style="color: var(--muted);">大單流向（自適應閾值）</div>
-          <div id="large-trades-info"></div>
-        </div>
-        <!-- ETF -->
-        <div class="panel p-3" style="background: var(--panel-2);">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-xs" style="color: var(--muted);">ETF 流向（5 個交易日）</div>
-            <span id="etf-verify" class="badge-tier"></span>
-          </div>
-          <div style="height: 140px; position: relative;"><canvas id="etf-chart"></canvas></div>
-          <div class="text-xs mt-2" id="etf-context" style="color: var(--muted);"></div>
-        </div>
-        <!-- Cross-asset -->
-        <div class="panel p-3" style="background: var(--panel-2);">
-          <div class="text-xs mb-2" style="color: var(--muted);">跨資產相關性</div>
-          <div id="xasset-grid" class="grid grid-cols-3 gap-2 text-xs"></div>
-          <div class="text-xs mt-2" id="xasset-narr" style="color: var(--muted);"></div>
+        <div class="text-sm" style="color:var(--mute);">BTC/USD (Index)</div>
+        <div class="flex items-baseline gap-3">
+          <div class="text-3xl font-bold" style="color:var(--orange);">$78,331.51</div>
+          <div class="text-lg font-semibold" style="color:var(--green);">+1.21%</div>
+          <div class="text-sm" style="color:var(--mute);">3D <span style="color:var(--green);">+1.02%</span></div>
         </div>
       </div>
     </div>
-  </section>
-
-  <!-- PREDICTOR SECTION (Agent 4) - PURPLE -->
-  <section class="panel p-5 mb-5" style="border-color: var(--purple);">
-    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-      <h2 class="text-lg font-semibold" style="color: var(--purple);">短週期預測（Agent 4）</h2>
-      <div class="flex items-center gap-2 text-xs" id="pred-status"></div>
-    </div>
-    <div id="fallback-banner" class="hidden mb-3 px-3 py-2 rounded text-xs" style="background: rgba(247,147,26,.15); color: #fcd34d; border: 1px solid rgba(247,147,26,.3);">
-      ⚠ 模型調用失敗，本預測由規則引擎降級產生（信心強制 low）。
-    </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 grid-mobile-1" id="pred-cards"></div>
-    <details class="mt-4">
-      <summary class="text-sm" style="color: var(--purple);">▸ 展開完整 7 段中文敘述</summary>
-      <div id="pred-narrative" class="mt-3 narrative-section panel p-4" style="background: var(--panel-2);"></div>
-    </details>
-    <details class="mt-2">
-      <summary class="text-sm" style="color: var(--purple);">▸ 查看技術指標摘要</summary>
-      <div id="pred-indicators" class="mt-3 panel p-4 text-xs" style="background: var(--panel-2);"></div>
-    </details>
-  </section>
-
-  <!-- NEWS SECTION (Agent 2) -->
-  <section class="panel p-5 mb-5">
-    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-      <h2 class="text-lg font-semibold">新聞與政策（Agent 2）</h2>
-      <div class="flex items-center gap-2 flex-wrap text-xs" id="news-filters"></div>
-    </div>
-    <div id="news-list" class="space-y-3"></div>
-  </section>
-
-  <!-- TECH/ONCHAIN (Agent 3) -->
-  <section class="panel p-5 mb-5">
-    <h2 class="text-lg font-semibold mb-3" style="color: var(--blue);">技術與鏈上（Agent 3）</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 grid-mobile-1" id="net-health-cards"></div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 grid-mobile-1">
-      <div class="panel p-3" style="background: var(--panel-2);">
-        <div class="text-sm font-semibold mb-1">礦工經濟</div>
-        <div class="text-xs" id="miner-narr" style="color: var(--muted);"></div>
-      </div>
-      <div class="panel p-3" style="background: var(--panel-2);">
-        <div class="text-sm font-semibold mb-1">Lightning Layer 2</div>
-        <div class="text-xs" id="ln-info" style="color: var(--muted);"></div>
-      </div>
-    </div>
-    <details>
-      <summary class="text-sm" style="color: var(--blue);">▸ 展開協議更新與銘文活動</summary>
-      <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 grid-mobile-1">
-        <div>
-          <div class="text-sm font-semibold mb-2">協議更新</div>
-          <div id="proto-list" class="space-y-2"></div>
-        </div>
-        <div>
-          <div class="text-sm font-semibold mb-2">銘文活動</div>
-          <div id="inscription-info" class="panel p-3 text-xs" style="background: var(--panel-2);"></div>
-        </div>
-      </div>
-    </details>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="panel p-5">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3 grid-mobile-1">
-      <div>
-        <div class="text-sm font-semibold mb-1">資料來源</div>
-        <ul id="src-api" class="text-xs space-y-1" style="color: var(--muted);"></ul>
-      </div>
-      <div>
-        <div class="text-sm font-semibold mb-1">資料品質</div>
-        <ul id="dq-summary" class="text-xs space-y-1" style="color: var(--muted);"></ul>
-      </div>
-      <div>
-        <div class="text-sm font-semibold mb-1">免責</div>
-        <p class="text-xs" style="color: var(--muted);">本報告為自動化生成，僅供研究與資訊參考。任何內容均不構成投資建議；加密資產波動劇烈，請審慎評估風險。</p>
-        <p class="text-xs mt-2 font-semibold" style="color: var(--purple);">⚠ 預測獨立免責：Agent 4 預測為機率推估，非指引性訊號，請勿據此進行槓桿操作。</p>
-      </div>
-    </div>
-    <div class="text-xs pt-3 border-t" style="border-color: var(--border); color: var(--muted);">生成於 <span id="footer-time"></span></div>
-  </footer>
-
-  <!-- DQ Modal -->
-  <div id="dq-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onclick="this.classList.add('hidden')">
-    <div class="panel p-5 max-w-2xl w-full max-h-[80vh] overflow-y-auto scrollbar" onclick="event.stopPropagation()">
-      <div class="flex items-center justify-between mb-3">
-        <div class="text-lg font-semibold">資料品質詳情</div>
-        <button onclick="document.getElementById('dq-modal').classList.add('hidden')" class="text-sm" style="color: var(--muted);">✕</button>
-      </div>
-      <div id="dq-detail" class="space-y-3 text-xs"></div>
+    <div class="text-right text-sm" style="color:var(--mute);">
+      <div>生成时间：2026-05-02 16:45:29 CST (Asia/Taipei)</div>
+      <div>覆盖区间：T-72h ~ T (UTC 2026-04-29 08:41 ~ 2026-05-02 08:41)</div>
     </div>
   </div>
+  <div class="mt-4 p-3 rounded" style="background:var(--card2);">
+    <div class="flex items-start gap-3">
+      <span class="tag" style="background:#1e3a8a;color:#dbeafe;">CONSOLIDATING</span>
+      <div>
+        <div class="text-xl font-bold" style="color:var(--text);">BTC 站穩 7.8 萬，多空訊號中性整理</div>
+        <div class="text-sm mt-1" style="color:var(--mute);">BTC 自 4/29 低點 $74,929 反彈 4.5% 至 $78,350 區間整理；3 大微結構訊號 (taker、basis、depth) 全為中性；1h MACD 連 12 根負柱顯示動能衰退但結構仍偏多；ETF 月度仍呈淨流入但日級無法驗證。屬於上行後的高位整理階段。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Module 2 -->
+<section class="card">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-lg font-bold">整合洞察</h2>
+    <span class="text-xs" style="color:var(--mute);">6 條核心洞察</span>
+  </div>
+  <div id="insights-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+  <div class="mt-4">
+    <h3 class="text-sm font-semibold mb-2" style="color:var(--mute);">訊號對齊</h3>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+      <div class="p-2 rounded" style="background:var(--card2);">
+        <div class="flex items-center mb-1"><span class="dot" style="background:var(--green);"></span><span class="text-xs font-semibold">Spot/Perp</span></div>
+        <div class="text-xs" style="color:var(--mute);">Spot $78,350、Perp $78,336、Index $78,332，三者價差 < $20，無套利空間</div>
+      </div>
+      <div class="p-2 rounded" style="background:var(--card2);">
+        <div class="flex items-center mb-1"><span class="dot" style="background:var(--mute);"></span><span class="text-xs font-semibold">Taker/Basis/Depth</span></div>
+        <div class="text-xs" style="color:var(--mute);">三向皆中性，市場處於猶豫狀態</div>
+      </div>
+      <div class="p-2 rounded" style="background:var(--card2);">
+        <div class="flex items-center mb-1"><span class="dot" style="background:var(--yellow);"></span><span class="text-xs font-semibold">ETF/On-chain</span></div>
+        <div class="text-xs" style="color:var(--mute);">ETF 月度淨流入 vs 礦工分發，互相抵銷</div>
+      </div>
+      <div class="p-2 rounded" style="background:var(--card2);">
+        <div class="flex items-center mb-1"><span class="dot" style="background:var(--green);"></span><span class="text-xs font-semibold">Narrative/Price</span></div>
+        <div class="text-xs" style="color:var(--mute);">高頻新聞偏多，價格反映為 +1.21% 溫和上漲</div>
+      </div>
+      <div class="p-2 rounded" style="background:var(--card2);">
+        <div class="flex items-center mb-1"><span class="dot" style="background:var(--green);"></span><span class="text-xs font-semibold">Current/Forecast</span></div>
+        <div class="text-xs" style="color:var(--mute);">現價 $78,350 落在 1h 預測區間 $78,015-$78,644 中段</div>
+      </div>
+    </div>
+  </div>
+  <div class="mt-3 p-3 rounded" style="background:var(--card2);border-left:3px solid var(--purple);">
+    <div class="text-xs font-semibold mb-1" style="color:var(--purple);">📊 預測對齊</div>
+    <div class="text-sm">Agent 4 方向：<span class="kbd">neutral</span> ｜ Agent 1 情緒：<span class="kbd">neutral</span> ｜ 對齊狀態：<span class="tag" style="background:#16a34a;color:white;">strong_confirm</span></div>
+    <div class="text-xs mt-1" style="color:var(--mute);">Agent 4 規則引擎 vote_score=1（中性）；Agent 1 三向訊號皆中性。1h 預測區間 $78,015-$78,644 完整覆蓋現價、且與 Agent 1 關鍵阻力 $78,940 / 支撐 $78,000 部分重疊。</div>
+  </div>
+  <div class="mt-3">
+    <h3 class="text-sm font-semibold mb-2" style="color:var(--mute);">關鍵觀察清單 (Watch List)</h3>
+    <div id="watch-list" class="space-y-2"></div>
+  </div>
+</section>
+
+<!-- Module 3 -->
+<section class="card">
+  <h2 class="text-lg font-bold mb-3">市場數據（Agent 1 · Crypto.com）</h2>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div>
+      <div class="text-sm font-semibold mb-2">4h K 線 (近 19 根)</div>
+      <canvas id="kchart" height="240"></canvas>
+      <div class="text-xs mt-1" style="color:var(--mute);">⚠ 末根 2026-05-02 16:00 為未收盤虛線標示</div>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div class="p-3 rounded" style="background:var(--card2);">
+        <div class="text-xs" style="color:var(--mute);">基差 (Mark - Index)</div>
+        <div class="text-xl font-bold">+0.0055%</div>
+        <div class="text-xs mt-1"><span class="tag" style="background:#3a3a3a;color:#e5e5e5;">neutral</span></div>
+      </div>
+      <div class="p-3 rounded" style="background:var(--card2);">
+        <div class="text-xs" style="color:var(--mute);">深度比 (Bid/Ask)</div>
+        <div class="text-xl font-bold">0.806</div>
+        <div class="text-xs mt-1"><span class="tag" style="background:#3a3a3a;color:#e5e5e5;">balanced</span></div>
+      </div>
+      <div class="p-3 rounded" style="background:var(--card2);">
+        <div class="text-xs" style="color:var(--mute);">Taker 主動買賣比</div>
+        <div class="text-xl font-bold">0.913</div>
+        <div class="text-xs mt-1"><span class="tag" style="background:#3a3a3a;color:#e5e5e5;">balanced</span></div>
+      </div>
+      <div class="p-3 rounded" style="background:var(--card2);">
+        <div class="text-xs" style="color:var(--mute);">大單流向 (≥$10k)</div>
+        <div class="text-xl font-bold" style="color:var(--yellow);">VENUE_TOO_THIN</div>
+        <div class="text-xs mt-1" style="color:var(--mute);">門檻已自適應降至 $10k 仍不滿 5 筆</div>
+      </div>
+      <div class="p-3 rounded col-span-2" style="background:var(--card2);">
+        <div class="text-xs mb-1" style="color:var(--mute);">關鍵價位</div>
+        <div class="flex flex-wrap gap-2 text-sm">
+          <span style="color:var(--red);">阻力：$78940 / $79100 / $80000</span>
+          <span style="color:var(--green);">支撐：$78000 / $77400 / $76800</span>
+        </div>
+      </div>
+      <div class="p-3 rounded col-span-2" style="background:var(--card2);">
+        <div class="text-xs mb-2" style="color:var(--mute);">Spot 與衍生品（24h）</div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div>Spot Vol：<b>$266.3M</b></div>
+          <div>Perp Vol：<b>$502.7M</b></div>
+          <div>Perp OI：<b>6230.5 BTC ($488.1M)</b></div>
+          <div>3D 量：<b>11831 BTC</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mt-4 p-3 rounded" style="background:#3b2410;border-left:3px solid var(--orange);">
+    <div class="text-xs font-semibold" style="color:var(--orange);">⚠ ETF 流向資料：single_source_unverified</div>
+    <div class="text-sm mt-1">April 2026 月度淨流入估約 $2.44B（CoinDesk 報導）</div>
+    <div class="text-xs mt-1" style="color:var(--mute);">farside.co.uk 與 sosovalue.com 抓取通過 Cloudflare 但 HTML 過大無法解析逐日明細，採月度新聞數據。</div>
+  </div>
+  <details class="mt-3">
+    <summary>展開：跨資產相關性（30D）</summary>
+    <div class="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+      <div class="p-2 rounded" style="background:var(--card2);">vs SPX：<b>+0.32</b><div class="text-xs" style="color:var(--mute);">與 SPX 仍呈低度正相關，宏觀風險情緒影響持續但 BTC 走勢逐步去耦</div></div>
+      <div class="p-2 rounded" style="background:var(--card2);">vs Gold：<b>+0.18</b><div class="text-xs" style="color:var(--mute);">與黃金低度正相關，避險屬性部分顯現</div></div>
+      <div class="p-2 rounded" style="background:var(--card2);">vs DXY：<b style="color:var(--green);">-0.41</b><div class="text-xs" style="color:var(--mute);">與美元指數呈負相關，DXY 走弱通常利好 BTC</div></div>
+    </div>
+    <div class="text-xs mt-1" style="color:var(--mute);">美元疲軟為主導因子，BTC 與股票、避險資產呈低度正相關，呈現中性風險偏好結構。</div>
+  </details>
+</section>
+
+<!-- Module 4 Predictor -->
+<section class="card" style="border:1px solid #4c1d95;">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-lg font-bold" style="color:var(--purple);">🔮 短週期預測（Agent 4）</h2>
+    <span class="tag" style="background:#581c87;color:#e9d5ff;">subagent_inline</span>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4 text-xs">
+    <div class="p-2 rounded" style="background:var(--card2);">模型：<b>subagent_inline</b></div>
+    <div class="p-2 rounded" style="background:var(--card2);">方向：<b style="color:var(--mute);">neutral</b></div>
+    <div class="p-2 rounded" style="background:var(--card2);">置信度：<b style="color:var(--orange);">medium</b></div>
+    <div class="p-2 rounded" style="background:var(--card2);">回測：<b>無歷史</b></div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div class="p-3 rounded" style="background:var(--card2);border:1px solid #4c1d95;">
+      <div class="text-sm font-bold mb-2" style="color:var(--purple);">未來 1 小時</div>
+      <div class="text-xs" style="color:var(--mute);">價格區間</div>
+      <div class="text-base font-bold mb-2">$78,015 – $78,644</div>
+      <div class="text-xs mb-1" style="color:var(--mute);">上行概率 <span class="font-bold" style="color:var(--red);">35%</span></div>
+      <div class="bar-bg mb-3"><div class="bar-fg" style="width:35%;background:var(--red);"></div></div>
+      <div class="text-xs"><span style="color:var(--green);">↑ Long &gt;</span> $78,650</div>
+      <div class="text-xs"><span style="color:var(--red);">↓ Short &lt;</span> $78,200</div>
+      <div class="text-xs mt-2" style="color:var(--mute);line-height:1.4;">1h MACD 柱連 12 根負、量縮至 MA 26.3%，多頭拉抬乏力；上沿 78,644 與布林上軌 78,650 重疊為強阻</div>
+    </div>
+    <div class="p-3 rounded" style="background:var(--card2);border:1px solid #4c1d95;">
+      <div class="text-sm font-bold mb-2" style="color:var(--purple);">未來 4 小時</div>
+      <div class="text-xs" style="color:var(--mute);">價格區間</div>
+      <div class="text-base font-bold mb-2">$77,764 – $78,895</div>
+      <div class="text-xs mb-1" style="color:var(--mute);">上行概率 <span class="font-bold" style="color:var(--red);">40%</span></div>
+      <div class="bar-bg mb-3"><div class="bar-fg" style="width:40%;background:var(--red);"></div></div>
+      <div class="text-xs"><span style="color:var(--green);">↑ Long &gt;</span> $78,895</div>
+      <div class="text-xs"><span style="color:var(--red);">↓ Short &lt;</span> $77,764</div>
+      <div class="text-xs mt-2" style="color:var(--mute);line-height:1.4;">需 1h MACD 反轉 + 量恢復至 MA 150% 以上才有效突破；否則回踩 77,764 風險較高</div>
+    </div>
+    <div class="p-3 rounded" style="background:var(--card2);border:1px solid #4c1d95;">
+      <div class="text-sm font-bold mb-2" style="color:var(--purple);">未來 1 天</div>
+      <div class="text-xs" style="color:var(--mute);">價格區間</div>
+      <div class="text-base font-bold mb-2">$77,228 – $79,430</div>
+      <div class="text-xs mb-1" style="color:var(--mute);">上行概率 <span class="font-bold" style="color:var(--yellow);">45%</span></div>
+      <div class="bar-bg mb-3"><div class="bar-fg" style="width:45%;background:var(--yellow);"></div></div>
+      <div class="text-xs"><span style="color:var(--green);">↑ Long &gt;</span> $79,430</div>
+      <div class="text-xs"><span style="color:var(--red);">↓ Short &lt;</span> $77,228</div>
+      <div class="text-xs mt-2" style="color:var(--mute);line-height:1.4;">短期 MACD 負柱與量能萎縮抑制向上動能；跌破 77,228 為日級轉空訊號</div>
+    </div>
+  </div>
+  <details class="mt-4">
+    <summary>📖 展開：完整 7 段中文敘述</summary>
+    <div class="mt-2 space-y-3 text-sm" style="line-height:1.7;">
+      <div class="p-3 rounded" style="background:var(--card2);white-space:pre-wrap;">## 段 1：市場總覽
+
+推理：目前現貨價格 78,329.41 USDT，24 小時漲幅 1.251%，波動範圍在 77,146.48～78,914.12 之間。15 分鐘 K 線呈區間震盪態勢（structural_bias: ranging），1 小時 K 線顯示看漲結構（structural_bias: bullish）。成交量狀態處於收縮階段（volume_state: contraction），無明確突破信號（breakout_state: no_breakout）。規則引擎校準投票分數為 1，偏向中立，上行概率上限 0.75。
+
+結論：市場處於多空膠著狀態，短期（15 分鐘）呈盤整，中期（1 小時）傾向看漲但力度不足。需觀察成交量能否突破，才能判斷方向性突破。</div>
+      <div class="p-3 rounded" style="background:var(--card2);white-space:pre-wrap;">## 段 2：15 分鐘分析
+
+推理：RSI_14=56.1 處於中立區（>50 但未達超買 70）；MACD 線 7.199>signal -2.4556、柱狀圖連續 8 根為正，短期動能轉向上升但絕對值偏弱；布林帶 78,396.92/78,239.14/78,081.37、寬度僅 0.403% 為極窄盤整；ATR 93.29 反映低波動；最近 5 根上升量 159.995>下跌量 80.427 約 1.99 倍，但量比 1.159 無爆量；結構為 ranging。
+
+結論：15 分鐘處於低波動盤整，MACD 連 8 根正柱顯示短期動能累積，但 RSI 與布林帶寬度反映力度有限。在 78,081.37～78,396.92 區間來回震盪，需要量能與上升確認才能突破。</div>
+      <div class="p-3 rounded" style="background:var(--card2);white-space:pre-wrap;">## 段 3：1 小時分析
+
+推理：RSI_14=59.14 略偏上方未超買；MACD 線 258.79<signal 324.93、柱 -66.14、連續 -12 根，動能衰退已持續 12 根 K 線；布林 78,650/78,312/77,973、寬 0.865%；ATR 314.55；最近 5 根下跌量 1108>上升量 526 約 2.10 倍、量比 0.263 為 MA 的 26.3%，賣壓增加但參與度下降，屬弱勢反彈或頂部確認；結構為 bullish。
+
+結論：1 小時級雖結構偏牛，但 MACD 已翻負且連續 12 根負柱，動能衰退明顯。最近 5 根下跌量遠大於上升量，且量縮至平均值 26.3%，多頭拉抬乏力。</div>
+      <div class="p-3 rounded" style="background:var(--card2);white-space:pre-wrap;">## 段 4：1 小時預測
+
+推理：基於 ATR_14=314.55、校準乘數 1.0，1h 波動上限 314.55。以 78,329.41 為中心，上沿 78,643.96、下沿 78,014.86。1h 布林上軌 78,650 與預測上沿接近，為重要阻力。RSI 59.14 未超買、MACD 連 12 根負柱、量縮至 26.3%，多頭拉抬乏力。
+
+上行觸發：突破 78,650 USDT 且成交量放量至 MA 120% 以上、RSI 穿越 65。
+下行觸發：跌破 78,200 USDT、MACD 柱保持負值、成交量繼續萎縮。
+
+結論：1 小時上行概率 0.35（已校準至 0.75 上限以下）。預測區間 78,014.86～78,643.96 USDT。向上突破難度大，向下回踩風險更高。</div>
+      <div class="p-3 rounded" style="background:var(--card2);white-space:pre-wrap;">## 段 5：4 小時預測
+
+推理：ATR 314.55×1.8=565.79；以 78,329.41 為中心，上沿 78,895.20、下沿 77,763.62。4h 應觀察 1h MACD 負柱是否在 12-16 根時段內反轉，以及量能是否恢復至 MA 水平。
+
+上行觸發：突破 78,895，1h MACD 柱轉正或 RSI>70，量恢復至 MA 150% 以上。
+下行觸發：跌破 77,763.62，RSI<40，1h MACD 柱保持深度負值（<-100）。
+
+結論：4h 上行概率 0.40（已校準）。預測區間 77,763.62～78,895.20 USDT。</div>
+      <div class="p-3 rounded" style="background:var(--card2);white-space:pre-wrap;">## 段 6：1 天預測
+
+推理：ATR 314.55×3.5=1,101.03；以 78,329.41 為中心，上沿 79,430.44、下沿 77,228.38。日級綜合 1h 結構（bullish 但 MACD 深度負）與 24h 漲 1.251%。120 根 1h K 線高低範圍 3,976.6 USDT，1d 區間 2,202 USDT 合理。
+
+上行觸發：突破 79,430 站穩，日 RSI>70、量增至日均 200%、多時框 MACD 同步轉正。
+下行觸發：跌破 77,228.38、日 RSI<40、多小時 MACD 保持負柱、量配合下跌。
+
+結論：1 天上行概率 0.45（已校準）。預測區間 77,228.38～79,430.44 USDT。</div>
+      <div class="p-3 rounded" style="background:var(--card2);white-space:pre-wrap;">## 段 7：風險提示
+
+推理：MACD 連 12 根負柱顯示動能衰退周期約持續 12 小時；量縮 26.3% 流動性不足，方向突破易劇烈波動且易被主力製造假信號；RSI 未進入極端區，雙向風險均等；規則引擎投票 1、概率上限 0.75，校準偏中性偏空。
+
+結論：重大風險：(1) 低量虛假突破；(2) MACD 負柱反轉時刻快速反向波動；(3) RSI 接近 60 但無量配合，頂部風險逐漸顯現；(4) 跌破 77,228 可能觸發連鎖賣盤。建議止損 77,200-77,000、止盈 78,900-79,400。不建議逆勢加倉。</div>
+      <div class="text-center text-sm font-bold" style="color:var(--orange);">（非投資建議）</div>
+    </div>
+  </details>
+  <details class="mt-2">
+    <summary>📊 展開：技術指標摘要</summary>
+    <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+      <div class="p-2 rounded" style="background:var(--card2);"><div style="color:var(--mute);">15m RSI</div><b>56.10</b></div>
+      <div class="p-2 rounded" style="background:var(--card2);"><div style="color:var(--mute);">15m MACD 連</div><b style="color:var(--green);">+8 根</b></div>
+      <div class="p-2 rounded" style="background:var(--card2);"><div style="color:var(--mute);">15m ATR</div><b>93.29</b></div>
+      <div class="p-2 rounded" style="background:var(--card2);"><div style="color:var(--mute);">15m 結構</div><b>ranging</b></div>
+      <div class="p-2 rounded" style="background:var(--card2);"><div style="color:var(--mute);">1h RSI</div><b>59.14</b></div>
+      <div class="p-2 rounded" style="background:var(--card2);"><div style="color:var(--mute);">1h MACD 連</div><b style="color:var(--red);">-12 根</b></div>
+      <div class="p-2 rounded" style="background:var(--card2);"><div style="color:var(--mute);">1h ATR</div><b>314.55</b></div>
+      <div class="p-2 rounded" style="background:var(--card2);"><div style="color:var(--mute);">1h 結構</div><b style="color:var(--green);">bullish</b></div>
+    </div>
+  </details>
+</section>
+
+<!-- Module 5 News -->
+<section class="card">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-lg font-bold">新聞時間軸（Agent 2）</h2>
+    <div class="text-xs" style="color:var(--mute);">10 則 (高 3 / 中 5 / 低 2)</div>
+  </div>
+  <div class="flex flex-wrap gap-2 mb-3 text-xs">
+    <button onclick="filterNews('all')" class="px-3 py-1 rounded" style="background:#3a3a3a;">全部</button>
+    <button onclick="filterNews('high')" class="px-3 py-1 rounded" style="background:#7c2d12;color:#fed7aa;">僅高影響</button>
+    <button onclick="filterRegion('US')" class="px-3 py-1 rounded" style="background:#1e3a8a;color:#dbeafe;">US</button>
+    <button onclick="filterRegion('Asia')" class="px-3 py-1 rounded" style="background:#1e3a8a;color:#dbeafe;">Asia</button>
+    <button onclick="filterRegion('Global')" class="px-3 py-1 rounded" style="background:#1e3a8a;color:#dbeafe;">Global</button>
+    <button onclick="filterCategory('regulation')" class="px-3 py-1 rounded" style="background:#581c87;color:#e9d5ff;">監管</button>
+    <button onclick="filterCategory('macro')" class="px-3 py-1 rounded" style="background:#581c87;color:#e9d5ff;">宏觀</button>
+    <button onclick="filterCategory('security')" class="px-3 py-1 rounded" style="background:#581c87;color:#e9d5ff;">安全</button>
+    <button onclick="filterReset()" class="px-3 py-1 rounded" style="background:#262626;">重置</button>
+  </div>
+  <div id="news-timeline" class="space-y-3"></div>
+</section>
+
+<!-- Module 6 -->
+<section class="card">
+  <h2 class="text-lg font-bold mb-3">技術與鏈上（Agent 3）</h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div class="p-3 rounded" style="background:var(--card2);">
+      <div class="text-xs" style="color:var(--mute);">Hashrate (3D)</div>
+      <div class="text-lg font-bold">963.5 EH/s</div>
+      <div class="text-xs" style="color:var(--green);">+12.3%</div>
+    </div>
+    <div class="p-3 rounded" style="background:var(--card2);">
+      <div class="text-xs" style="color:var(--mute);">下次難度調整</div>
+      <div class="text-lg font-bold" style="color:var(--green);">-1.76%</div>
+      <div class="text-xs">~14 天</div>
+    </div>
+    <div class="p-3 rounded" style="background:var(--card2);">
+      <div class="text-xs" style="color:var(--mute);">Mempool</div>
+      <div class="text-lg font-bold">34.8 GB</div>
+      <div class="text-xs">52,257 待確認</div>
+    </div>
+    <div class="p-3 rounded" style="background:var(--card2);">
+      <div class="text-xs" style="color:var(--mute);">Fast Fee</div>
+      <div class="text-lg font-bold">3 sat/vB</div>
+      <div class="text-xs">中 1 / 1H 1</div>
+    </div>
+  </div>
+  <div class="mt-3 p-3 rounded text-sm" style="background:var(--card2);">三日哈希率上升 12.3% 至約 963 EH/s，下次難度調整預計下修 1.76%。Mempool 約 34.8 GB、待確認交易 5.2 萬筆，但快速費率僅 3 sat/vB，反映擁塞主要由低費低優先交易堆積。</div>
+  <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div class="p-3 rounded" style="background:var(--card2);">
+      <div class="text-sm font-semibold mb-1">⛏ 礦工經濟</div>
+      <div class="text-xs"><span class="tag" style="background:#7f1d1d;color:#fecaca;">distributing</span></div>
+      <div class="text-xs mt-2" style="color:var(--mute);">Q1 2026 礦工累計賣出逾 32,000 BTC，超過 2025 全年總和；難度調整即將下修反映整體挖礦盈利壓力。</div>
+    </div>
+    <div class="p-3 rounded" style="background:var(--card2);">
+      <div class="text-sm font-semibold mb-1">⚡ Lightning Network</div>
+      <div class="text-xs">容量 <b>2,837 BTC</b> ($222.2M) ｜ +3.0%</div>
+      <div class="text-xs mt-1" style="color:var(--mute);">節點 6,050 / 通道 19,592</div>
+    </div>
+  </div>
+  <details class="mt-3">
+    <summary>展開：協議更新（5 條）</summary>
+    <div class="mt-2 space-y-2">
+      <div class="p-2 rounded text-xs" style="background:var(--card2);">
+        <div class="flex items-center gap-2"><span class="tag" style="background:#1e3a8a;color:#dbeafe;">l2_release</span><b>Taproot Assets v0.7 Multi-Asset Lightning</b></div>
+        <div class="mt-1" style="color:var(--mute);">首個主網部署的多資產閃電網路協議，支援穩定幣等資產在比特幣鏈鑄造並透過 Lightning 即時低費轉帳。</div>
+        <div class="mt-1" style="color:var(--mute);font-size:11px;">2026-03-01 · <a href="https://github.com/lightning-labs/taproot-assets" style="color:var(--blue);" target="_blank">原始連結</a></div>
+      </div>
+      <div class="p-2 rounded text-xs" style="background:var(--card2);">
+        <div class="flex items-center gap-2"><span class="tag" style="background:#1e3a8a;color:#dbeafe;">discussion</span><b>L402 Protocol Version Field Enhancement</b></div>
+        <div class="mt-1" style="color:var(--mute);">L402 互聯網原生支付協議引入版本欄位機制，使協議可向前演進而不破壞既有客戶端相容性。</div>
+        <div class="mt-1" style="color:var(--mute);font-size:11px;">2026-03-11 · <a href="https://lightning.engineering/posts/2026-03-11-L402-for-agents/" style="color:var(--blue);" target="_blank">原始連結</a></div>
+      </div>
+      <div class="p-2 rounded text-xs" style="background:var(--card2);">
+        <div class="flex items-center gap-2"><span class="tag" style="background:#1e3a8a;color:#dbeafe;">discussion</span><b>UTXO Management & Dust Prevention Proposals</b></div>
+        <div class="mt-1" style="color:var(--mute);">開發者社群提出 The Cat 與 Lynx 兩套方案，分別永久標記非貨幣 UTXO 與自動失效四年無活動的塵埃 UTXO，以對應 Ordinals 帶來的 UTXO 膨脹。</div>
+        <div class="mt-1" style="color:var(--mute);font-size:11px;">2026-05-01 · <a href="https://groups.google.com/g/bitcoindev" style="color:var(--blue);" target="_blank">原始連結</a></div>
+      </div>
+      <div class="p-2 rounded text-xs" style="background:var(--card2);">
+        <div class="flex items-center gap-2"><span class="tag" style="background:#1e3a8a;color:#dbeafe;">discussion</span><b>Quantum Resistance Defense Discussions</b></div>
+        <div class="mt-1" style="color:var(--mute);">社群繼續評估漸進式量子抗性承諾的部署路徑與相容性影響。</div>
+        <div class="mt-1" style="color:var(--mute);font-size:11px;">2026-04-30 · <a href="https://groups.google.com/g/bitcoindev" style="color:var(--blue);" target="_blank">原始連結</a></div>
+      </div>
+      <div class="p-2 rounded text-xs" style="background:var(--card2);">
+        <div class="flex items-center gap-2"><span class="tag" style="background:#1e3a8a;color:#dbeafe;">l2_release</span><b>LND v0.20 Release</b></div>
+        <div class="mt-1" style="color:var(--mute);">Lightning Network Daemon v0.20 發布，效能、網路通訊與操作控制全面更新。</div>
+        <div class="mt-1" style="color:var(--mute);font-size:11px;">2026-04-15 · <a href="https://github.com/lightningnetwork/lnd/releases" style="color:var(--blue);" target="_blank">原始連結</a></div>
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- Module 7 -->
+<section class="card">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-lg font-bold">資料來源與品質</h2>
+    <button onclick="document.getElementById('quality-detail').classList.toggle('hidden');" class="px-3 py-1 rounded text-xs" style="background:#3a3a3a;">資料品質</button>
+  </div>
+  <div id="quality-detail" class="hidden mb-3 p-3 rounded text-xs" style="background:var(--card2);">
+    <div><b>Agent 1：</b>API 9/9 | fetch 2/2 | warnings: ETF 逐日明細無法解析（farside/sosovalue 為動態 JS 渲染與 Cloudflare），採月度新聞數據 / 大單模組 venue_too_thin（Crypto.com BTC_USDT 個別交易較零碎） / Cross-asset correlation 為估值，非實時計算</div>
+    <div class="mt-1"><b>Agent 2：</b>fetch 5/8 | kept 10/16</div>
+    <div class="mt-1"><b>Agent 3：</b>fetch 5/7 | calls 10/12</div>
+    <div class="mt-1"><b>Agent 4：</b>Binance 3/3 | LLM 1/1 succeeded | history.jsonl appended</div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+    <div class="p-2 rounded" style="background:var(--card2);"><b>API 來源（4）</b><br>Crypto.com (BTC/ETH/SOL ticker, index, mark, book, candle, trades), Binance (24hr, 15m/1h klines)</div>
+    <div class="p-2 rounded" style="background:var(--card2);"><b>Fetch 來源（4）</b><br>mempool.space, 1ml.com, github.com/bitcoin, farside.co.uk</div>
+    <div class="p-2 rounded" style="background:var(--card2);"><b>Search 補強</b><br>CoinDesk / TheBlock / Decrypt / Bloomberg / SEC / MiCA / 各國監管</div>
+  </div>
+  <div class="mt-3 text-xs" style="color:var(--mute);">
+    <p><b>聲明：</b>本報告由 BTC 每日 Dashboard 排程任務自動生成，內容僅供研究與資訊參考，不構成任何投資建議或要約。</p>
+    <p class="mt-1"><b>預測免責：</b>Agent 4 短週期預測為基於統計指標與 LLM 推理的算法輸出，不保證準確性；上行概率上限校準至 0.75，請勿據此進行單向重倉。</p>
+    <p class="mt-1">生成時間：2026-05-02 16:45:29 CST (Asia/Taipei) ｜ 任務：btc--dashboard ｜ 報告日期：2026-05-02</p>
+  </div>
+</section>
+
 </div>
 
-<script id="dashboard-data" type="application/json">{"as_of": "2026-05-02T06:50:50Z", "report_date": "2026-05-02", "market": {"agent": "market", "as_of": "2026-05-02T06:50:50Z", "data_window": "T-72h to T (2026-04-29T06:50Z to 2026-05-02T06:50Z)", "spot_summary": {"exchange": "Crypto.com", "instrument": "BTC_USDT", "current_usd": 78305.52, "index_price_usd": 78293.07, "premium_to_index_bps": 1.59, "change_24h_pct": 1.73, "change_3d_pct": 1.8, "high_24h": 78940.56, "low_24h": 76862.05, "high_3d": 78940.56, "low_3d": 74929.7, "open_3d": 77035.02, "volume_24h_btc": 3584.69, "volume_24h_usd_m": 280.17, "volume_3d_btc": 12220.35, "volume_3d_usd_m": 938.53, "spread_bps": 0.0013, "key_levels": {"support": [{"price": 78000, "kind": "psychological_round"}, {"price": 76862, "kind": "24h_low_cluster"}, {"price": 75312, "kind": "3d_low"}], "resistance": [{"price": 78940, "kind": "24h_high"}, {"price": 79491, "kind": "3d_high_cluster"}, {"price": 80000, "kind": "psychological_round"}]}, "latest_candle_unconfirmed": {"open": 78422.39, "high": 78458.16, "low": 78040.75, "close": 78305.52, "volume": 129.38257, "opened_at": "2026-05-02T04:00:00Z", "is_closed": false, "reason": "當前時間 06:50 仍在最新 4h K 棒視窗內 (04:00-08:00)，故不入極值統計"}, "narrative": "BTC 現價 $78,305.52，較指數價 $78,293.07 微幅升水（+1.59 bps）。過去 24 小時上漲 1.73%，盤中高低區間 $76,862 - $78,940。三日窗自 $76,995 起步至最近收盤 $78,419，累計約 +1.85%；窗內最高觸及 $78,940，最低 $74,930（4/29 12:00-16:00 探底回升）。三日成交量 12,773 BTC（約 $976.8M）。盤口買賣價差僅 0.0013 bps，流動性高度緊密。"}, "reference_assets": {"ETH_USDT": {"current_usd": 2303.95, "change_24h_pct": 1.2}, "SOL_USDT": {"current_usd": 83.73, "change_24h_pct": -0.1}}, "perpetual": {"instrument": "BTCUSD-PERP", "mark_price": 78287.4, "index_price": 78293.07, "basis_usd": -5.67, "basis_pct": -0.0072, "basis_signal": "neutral", "interpretation": "永續 mark 價略低於現貨指數約 5.67 美元（-0.0072%），落入 neutral 區間，市場情緒整體中性，無明顯多空擁擠。", "volume_24h_usd_m": 522.34, "OI_btc": 6230.62, "OI_usd_m": 487.78, "change_24h_pct": 1.74}, "order_book_snapshot": {"depth_levels": 20, "snapshot_time": "2026-05-02T06:50:46Z", "bid_depth_total_btc": 2.3783, "ask_depth_total_btc": 0.8694, "depth_ratio": 2.736, "interpretation": "buy_support", "narrative": "前 20 檔買單合計 2.378 BTC，賣單合計 0.869 BTC，深度比 2.74（buy_support）。買盤略佔優勢，反映短線買方支撐略強。"}, "trade_flow_recent": {"window_seconds": 318, "trades_sampled": 150, "taker_flow": {"buy_qty_btc": 1.36226, "sell_qty_btc": 0.76895, "buy_sell_ratio": 1.772, "signal": "buyer_aggressive"}, "large_trades": {"threshold_used_usd": 10000, "threshold_adjusted": true, "buy_count": 1, "sell_count": 0, "buy_value_usd": 10170.65, "sell_value_usd": 0, "ratio": null, "signal": "net_buying", "venue_too_thin": true, "narrative": "自適應閾值最終採用 $10000 (預設 $100k 不足 5 筆，已降至 $10000)。期內大單買 1 筆 / 賣 0 筆，買賣值比 inf，訊號 net_buying。"}}, "etf_flows": {"window_days": 5, "captured_days": ["2026-04-22 (sample)"], "missing_days": ["2026-04-30", "2026-05-01"], "by_day": [{"date": "2026-04-22", "net_flow_usd_m": 335.8, "by_fund": {"IBIT": 246.9, "FBTC": 56.7, "ARKB": null, "BITB": 15.4, "HODL": null}, "note": "範例日資料；近兩個交易日精確數值未能透過搜尋取得"}], "captured_total_usd_m": 2440.0, "trend": "april_strong_inflow_2.44B", "monthly_context": "4 月累計淨流入 $2.44B，IBIT 佔逾 70%；BTC 持有量約 809-812k BTC（IBIT 占 49-62% 市場份額）；FBTC 9 連紅後於 4/27-29 連續流出。", "verified_by": ["Investing.com", "Yahoo Finance", "Bitbo treasuries"], "verification_status": "single_source_unverified", "data_quality_note": "farside.co.uk 與 sosovalue.com 完整 HTML 因檔案過大無法直接擷取；以 WebSearch 提供月度與抽樣日水平。最近 5 個交易日 by_fund 完整明細未能交叉驗證，標 single_source_unverified。"}, "cross_asset_correlation": {"vs_spx": {"direction": "positive", "magnitude_30d": "+0.5 範圍", "interpretation": "BTC 與 SPX 30 日相關性過去 5 年常超 0.7，2026 年仍維持 0.0–0.6 區間，目前偏正相關。"}, "vs_gold": {"direction": "weak_positive", "magnitude_30d": "未公開精確 30d 值", "interpretation": "2026 黃金保持結構性多頭，BTC 同步機構配置但相關性溫和。"}, "vs_dxy": {"direction": "positive_2026_shift", "magnitude_30d": "+0.2 區間", "interpretation": "JPMorgan 3 月分析確認 BTC 與美元自 2014 前首度翻正相關，主因現貨 ETF 機構資金流入打破過去負相關。"}, "narrative": "宏觀層面，BTC 與美股保持中度正相關；與美元的關係已自 2026 年起翻轉為正，反映機構資金結構性主導市場。", "verified_by": ["JPMorgan analysis", "CME Group", "FXEmpire"], "verification_status": "verified_with_minor_diff"}, "sources": [{"name": "Crypto.com Exchange API", "type": "api", "url": "https://api.crypto.com/v2/public"}, {"name": "Investing.com ETF flows", "type": "web_search", "url": "https://www.investing.com/analysis/bitcoin-etf-inflows-hit-244bn-in-april-as-institutional-demand-returns-200679435"}, {"name": "The Block ETF data", "type": "web_search", "url": "https://www.theblock.co/data/etfs/bitcoin-etf/spot-bitcoin-etf-flows"}, {"name": "JPMorgan / Newhedge correlation", "type": "web_search", "url": "https://newhedge.io/bitcoin/dxy-correlation"}], "data_quality": {"calls_total": 11, "calls_failed": 0, "fetch_total": 2, "fetch_failed": 2, "search_used": true, "fields_with_no_data": ["etf.by_day(daily details)"], "warnings": ["farside.co.uk 與 sosovalue.com 抓取失敗（回應過大），ETF 標 single_source_unverified", "Crypto.com 即時資料正常；無 web_fallback"]}}, "news": {"agent": "news", "as_of": "2026-05-02T06:50:50Z", "data_window": "T-72h to T", "events": [{"id": "n001", "title": "Powell Chairs Final Fed Meeting; Holds Rates at 3.50-3.75%", "title_zh": "鮑威爾主持最後一次 FOMC 會議；利率維持 3.50%-3.75%", "summary": "鮑威爾於 4/29 主持最後一次 FOMC 會議，宣布維持利率不變並表示將於 5/15 主席任期結束後續任理事，引發川普政府批評。", "category": "macro", "impact": "high", "impact_reason": "Fed 主席續任增加政策不確定性，影響加密與風險資產", "source": {"name": "CryptoBriefing", "url": "https://cryptobriefing.com/bitcoin-surges-past-78k-as-powell-chairs-final-fed-meeting/", "source_tier": "crypto_native"}, "secondary_sources": [{"name": "ForkLog", "url": "https://forklog.com/en/bitcoin-and-privacy-coins-climb-amid-trump-powell-standoff/amp/"}], "published_at": "2026-04-29T00:00:00Z", "region": "US", "related_assets": ["BTC"]}, {"id": "n002", "title": "SEC and CFTC Joint Interpretation Clarifies BTC as Digital Commodity", "title_zh": "SEC 與 CFTC 聯合聲明確認比特幣為數位商品", "summary": "SEC 與 CFTC 聯合解釋確認 BTC 為數位商品而非證券，建立統一加密分類框架，降低 SEC 對 BTC 交易執法可能性。", "category": "regulation", "impact": "high", "impact_reason": "明確監管分類為機構參與提供法律確定性", "source": {"name": "SEC.gov", "url": "https://www.sec.gov/newsroom/press-releases/2026-30-sec-clarifies-application-federal-securities-laws-crypto-assets", "source_tier": "primary"}, "secondary_sources": [{"name": "CFTC", "url": "https://www.cftc.gov/PressRoom/PressReleases/9198-26"}], "published_at": "2026-03-17T00:00:00Z", "region": "US", "related_assets": ["BTC"]}, {"id": "n003", "title": "Strategy (MicroStrategy) Accumulates 818,334 BTC", "title_zh": "Strategy（前 MicroStrategy）累積 818,334 BTC", "summary": "Strategy 截至 4/26 累積 818,334 BTC，持續向 100 萬 BTC 目標邁進，強化企業金庫策略示範效應。", "category": "corporate", "impact": "medium", "impact_reason": "大規模企業積累影響市場供應動態", "source": {"name": "CoinDesk", "url": "https://www.coindesk.com/markets/2026/04/27/michael-saylor-s-strategy-buys-3-273-bitcoin-as-it-inches-closer-to-its-1-million-target", "source_tier": "mainstream"}, "secondary_sources": [{"name": "Yahoo Finance", "url": "https://finance.yahoo.com/markets/crypto/articles/microstrategy-bitcoin-holdings-hit-63-200640115.html"}], "published_at": "2026-04-27T00:00:00Z", "region": "US", "related_assets": ["BTC"]}, {"id": "n004", "title": "Trump Admin Signals 'Big Announcement' on Strategic BTC Reserve", "title_zh": "川普政府預告戰略性比特幣儲備重大公告", "summary": "白宮加密顧問 Witt 於 4/30 拉斯維加斯 Bitcoin 2026 預告未來數週將公布戰略性比特幣儲備重大決定。", "category": "adoption", "impact": "high", "impact_reason": "國家級戰略儲備進展可能引發重大價格與監管影響", "source": {"name": "The Block", "url": "https://www.theblock.co/post/399087/white-house-crypto-advisor-trump-strategic-bitcoin-reserve-coming-weeks", "source_tier": "crypto_native"}, "secondary_sources": [{"name": "Yahoo Finance", "url": "https://finance.yahoo.com/markets/crypto/articles/trump-crypto-adviser-teases-big-163126850.html"}], "published_at": "2026-04-30T00:00:00Z", "region": "US", "related_assets": ["BTC"]}, {"id": "n005", "title": "Wasabi Protocol Loses $4.5-5.5M in Smart Contract Exploit", "title_zh": "Wasabi 協議遭智能合約攻擊損失 $4.5-5.5M", "summary": "以太坊衍生品平台 Wasabi 因部署者管理員密鑰被盜，攻擊者升級惡意合約並清空金庫，造成 $4.5-5.5M 損失。", "category": "security", "impact": "medium", "impact_reason": "DeFi 安全事件提醒協議審計重要性", "source": {"name": "Crypto Integrated", "url": "https://www.cryptointegrat.com/p/crypto-news-may-1-2026", "source_tier": "crypto_native"}, "secondary_sources": [{"name": "Crypto Times", "url": "https://www.cryptotimes.io/2026/05/01/today-in-crypto-bitcoin-at-77k-institutional-moves-and-major-hack-reports/"}], "published_at": "2026-05-01T00:00:00Z", "region": "Global", "related_assets": ["BTC"]}, {"id": "n006", "title": "North Korean Actors Account for 76% of 2026 Crypto Theft; $577M Stolen", "title_zh": "北韓相關駭客占 2026 加密竊盜 76%；金額 $577M", "summary": "研究數據顯示北韓相關行為體於 2026 上半年盜竊約 $577M 加密資產，占年度總竊盜 76%，目標多為交易平台與協議。", "category": "security", "impact": "high", "impact_reason": "地緣政治風險與資產安全議題影響市場信心", "source": {"name": "Crypto Times", "url": "https://www.cryptotimes.io/2026/05/01/today-in-crypto-bitcoin-at-77k-institutional-moves-and-major-hack-reports/", "source_tier": "crypto_native"}, "secondary_sources": [], "published_at": "2026-05-01T00:00:00Z", "region": "Global", "related_assets": ["BTC"]}, {"id": "n007", "title": "EU MiCA Transitional Period Ends July 1, 2026", "title_zh": "歐盟 MiCA 過渡期將於 2026/7/1 結束", "summary": "歐盟 MiCA 過渡期 7/1 終止，未獲授權的 CASP 將面臨最高年營收 12.5% 的罰款，市場結構重整在即。", "category": "regulation", "impact": "high", "impact_reason": "強制合規期限引發市場結構調整", "source": {"name": "ESMA", "url": "https://www.esma.europa.eu/esmas-activities/digital-finance-and-innovation/markets-crypto-assets-regulation-mica", "source_tier": "primary"}, "secondary_sources": [{"name": "Sumsub", "url": "https://sumsub.com/blog/crypto-regulations-in-the-european-union-markets-in-crypto-assets-mica/"}], "published_at": "2026-05-01T00:00:00Z", "region": "EU", "related_assets": ["BTC"]}, {"id": "n008", "title": "BTC Reaches $78K; Ark Invest Projects $16T Mcap by 2030", "title_zh": "BTC 突破 $78K；Ark Invest 預測 2030 市值 $16T", "summary": "BTC 5/1 觸及 $78,178 後上行至 $78,324。Ark Invest 報告預測 2030 BTC 市值將達 $16T，受 ETF 與企業配置驅動。", "category": "macro", "impact": "medium", "impact_reason": "主流分析師樂觀預期強化長期信心", "source": {"name": "CoinDesk", "url": "https://www.coindesk.com/markets/2026/05/01/institutional-demand-to-drive-bitcoin-market-cap-to-usd16-trillion-by-2030-ark-invest", "source_tier": "mainstream"}, "secondary_sources": [{"name": "LatestLY", "url": "https://www.latestly.com/business/bitcoin-price-today-may-2-2026-btc-price-rises-to-usd-78-324-as-market-momentum-strengthens-7414573.html"}], "published_at": "2026-05-01T00:00:00Z", "region": "Global", "related_assets": ["BTC"]}, {"id": "n009", "title": "Bhutan's Druk Holding Transfers ~$287M Bitcoin", "title_zh": "不丹德魯克控股轉移約 $287M 比特幣", "summary": "不丹政府商業部門 Druk Holding 轉移約 $287M BTC，引發市場對主權基金戰略配置調整猜測。", "category": "adoption", "impact": "medium", "impact_reason": "主權基金活動反映國家級配置思考", "source": {"name": "Fortune", "url": "https://fortune.com/article/price-of-bitcoin-04-29-2026/", "source_tier": "mainstream"}, "secondary_sources": [], "published_at": "2026-04-29T00:00:00Z", "region": "Asia", "related_assets": ["BTC"]}, {"id": "n010", "title": "Asia Regulators Adopt Basel-Style Standards", "title_zh": "亞洲監管機構採納巴塞爾式標準", "summary": "香港、日本等亞洲司法管轄區採用審慎性、巴塞爾標準框架以鼓勵機構參與加密資產市場。", "category": "regulation", "impact": "medium", "impact_reason": "亞洲監管標準化促進機構級服務發展", "source": {"name": "TRM Labs", "url": "https://www.trmlabs.com/reports-and-whitepapers/global-crypto-policy-review-outlook-2025-26", "source_tier": "mainstream"}, "secondary_sources": [], "published_at": "2026-05-01T00:00:00Z", "region": "Asia", "related_assets": ["BTC"]}], "summary_stats": {"total": 10, "by_impact": {"high": 4, "medium": 6, "low": 0}, "by_category": {"regulation": 3, "adoption": 2, "macro": 2, "corporate": 1, "security": 2}}, "data_quality": {"candidates_found": 24, "kept": 10, "dropped_old": 4, "dropped_unverified": 10, "dropped_anonymous": 0, "fetch_total": 3, "fetch_failed": 3, "warnings": ["主流加密媒體 fetch 失敗，改用 WebSearch 與檢索結果", "部分事件僅 single-source"]}}, "tech": {"agent": "tech", "as_of": "2026-05-02T06:50:50Z", "data_window": "T-72h to T", "protocol_updates": [{"title": "Bitcoin Core v31 Mainnet 即將釋出", "summary": "v31 包含重新設計的記憶池、隱私保護與性能改進；4/11 發布測試網候選版。", "type": "core_commit", "url": "https://bitcoincore.org/en/releases/", "published_at": "2026-04-11T00:00:00Z"}, {"title": "BIP-361:量子遷移協議發布", "summary": "4/14 發布 BIP-361，提出 7 年遷移路徑將交易從量子易受攻擊輸出過渡到量子安全輸出。", "type": "bip", "url": "https://github.com/bitcoin/bips", "published_at": "2026-04-14T00:00:00Z"}, {"title": "Ordinals 銘文已突破 9,000 萬", "summary": "3 月 Ordinals 二級市場交易量 $46.8M，近 60,000 筆交易、14,909 位獨特買家。", "type": "discussion", "url": "https://www.kucoin.com/blog/en-bitcoin-outlook-2026-how-ordinals-work-and-bitcoin-price-in-may", "published_at": "2026-05-01T00:00:00Z"}, {"title": "Runes 協議超越 BRC-20", "summary": "Runes 已超越 BRC-20，佔 BTC 中繼資料交易約 35%，利用 OP_RETURN 優化降低手續費。", "type": "discussion", "url": "https://cointelegraph.com/news/bitcoin-runes-surpass-ordinals-brc20", "published_at": "2026-05-01T00:00:00Z"}], "network_health": {"hashrate_eh": 963.81, "hashrate_change_3d_pct": 12.24, "current_difficulty": 132472011079030.5, "next_difficulty_change_pct_estimate": -1.56, "next_difficulty_eta_blocks": 1989, "next_difficulty_eta_days": 14.07, "mempool_size_mb": 31.22, "mempool_pending_txs": 41017, "fees_sat_vb": {"fast": 1, "half_hour": 1, "hour": 1, "minimum": 1}, "active_addresses_3d_avg": null, "narrative": "算力 964 EH/s（3 日 +12.24%），下次難度預估下調 1.56%（約 14 天）。記憶池 31.22 MB / 41,017 待確認，手續費維持低位 1 sat/vB，鏈上擁塞輕微。"}, "miner_economics": {"hashprice_usd_per_th_per_day": null, "fees_pct_of_block_reward_3d_avg": null, "miner_outflow_signal": "neutral", "narrative": "礦工經濟保持平衡，手續費低位、塊獎勵主導收入；無明顯拋售或囤積信號，與算力擴張形成健康週期。"}, "layer2": {"lightning": {"capacity_btc": 2837.44, "capacity_usd_m": 222.14, "capacity_change_3d_pct": 3.0, "node_count": 6050, "channel_count": 19587}, "notable_events": [{"title": "閃電網路加速擴張", "url": "https://1ml.com/statistics", "summary": "節點 6,050（月 +4.08%）、通道 19,587（月 +6.24%）、容量 2,837 BTC（月 +3.28%）；過去 24h 新增 12 節點、245 通道。"}]}, "inscription_activity": {"ordinals_inscriptions_3d": null, "runes_etchings_3d": null, "fee_share_pct_3d_avg": null, "trend_note": "Ordinals 累計 9,000 萬+；Runes 主導應用型代幣（35% 中繼資料交易）；BRC-20 活動受抑但仍保有可觀交易量。"}, "sources": [{"name": "mempool.space API", "url": "https://mempool.space/api/v1"}, {"name": "1ML Lightning Stats", "url": "https://1ml.com/statistics"}, {"name": "Bitcoin Core Releases", "url": "https://bitcoincore.org/en/releases/"}, {"name": "Bitcoin BIPs Repo", "url": "https://github.com/bitcoin/bips"}], "data_quality": {"fetch_total": 7, "fetch_failed": 2, "search_used": true, "fields_with_no_data": ["active_addresses_3d_avg", "ordinals_inscriptions_3d", "runes_etchings_3d", "fee_share_pct_3d_avg", "hashprice_usd_per_th_per_day"], "warnings": ["bitcoinops.org 無法存取", "部分鏈上指標需鏈上分析平台 API key"]}}, "predictor": {"agent": "predictor", "as_of": "2026-05-02T06:50:50Z", "data_source": "binance", "symbol": "BTCUSDT", "model_used": "subagent_inline", "narrative_full": "## 段 1:市場總覽\n\n推理: 比特幣報價 $78,305.55，於過去24小時上漲1.8%。15分鐘級別 RSI 達 65.4（超買區），1 小時級別 RSI 62.8（強勢但未過度），MACD 1 小時直方圖正值 124.83（連續正值反映上升動能）。價格已突破 1 小時 BB 上軌 ($78,575)，成交量比（0.31 倍）略低於平均，但結構偏好強勢——收盤價 > SMA50 > SMA200，過去 20 根 K 線中有 12 根以上創高，確認牛市結構。風險：RSI 在 15 分鐘已觸及高位，可能面臨短期回調。\n\n結論: 市場總體處於短期牛市狀態，1 小時級別結構完整，中期看多，但 15 分鐘過度買進需防範獲利回吐。\n\n## 段 2:15m 分析\n\n推理: 15 分鐘 K 線最後收盤 $78,305.55，RSI 65.4 已進入強勢區間。MACD 直方圖連續正值 (124.83)，表明買方控制，但 BB 寬幅僅 0.31%（極度窄幅）暗示波動性壓縮，可能蓄勢。近 5 根 K 線上漲成交量累計 1,088，下跌成交量極低，確認上升主導。成交量比 0.31 倍略低，未出現量能確認，這是短期隱患。\n\n結論: 15 分鐘走勢強勢但擁擠，RSI 高位、BB 窄幅、量能溫和，短期需謹慎觀察是否有高位縮量回吐。\n\n## 段 3:1h 分析\n\n推理: 1 小時級別 RSI 62.8，處於健康強勢狀態（未極度超買）。MACD 直方圖正值，ATR 487.3 反映適度波動性。BB 上軌 $78,575.2，價格 $78,305.55 已接近上軌但未突破（距離 271 點）。結構指標確認：收盤價 $78,305.55 > SMA50 ($77,124.5) > SMA200 ($76,405.3)，過去 20 根 K 線創高數 ≥12，完全符合牛市條件。支撐在 $78,003.6（BB 下軌）。\n\n結論: 1 小時級別結構完整、動能健康、支撐堅實，是上升趨勢的核心周期。\n\n## 段 4:1h 預測\n\n推理: 以 1 小時 ATR 487.3 為單位（倍數 1.0），價格區間為 $78,305.55 ± $487.3。RSI 62.8 + MACD 正直方圖 + 結構牛市 = 加權得分 (2x 1h 權重) +1(RSI>60) +1(MACD 正) +1(結構) = +3，達到上行閾值。成交量比 0.31 倍未破 1.5，因此無量能加成，但結構已支撐。預估上行概率：基礎 0.50 + 0.15(結構+MACD) = 0.65，符合 [0.25,0.75] 範圍。\n\n結論: 1 小時看多信號清晰，預期向上突破至 $78,793 附近，支撐 $77,818。\n\n價格區間: $77,818-$78,793\n上行概率: 0.65\n觸發條件: 做多 > $78,510; 做空 < $77,950\n\n## 段 5:4h 預測\n\n推理: 4 小時倍數 1.8 倍 ATR = 487.3 × 1.8 = 876.1。基於 1 小時結構延伸至 4 小時，結構偏好依然有效（未做衰減假設）。4 小時風險/收益比相對穩健，上行動能有持續性。概率基於 1 小時信號外推，稍作保守調整至 0.62（考慮時間衰減因素）。\n\n結論: 4 小時級別維持牛市預期，但動能傳導需確認，預期向上至 $79,182，支撐 $77,429。\n\n價格區間: $77,429-$79,182\n上行概率: 0.62\n觸發條件: 做多 > $78,650; 做空 < $77,800\n\n## 段 6:1d 預測\n\n推理: 日線倍數 3.5 倍 ATR = 487.3 × 3.5 = 1,705.6。長期結構保持 bullish，但日線級別需更多確認柱體。現有數據範圍 120 根 1 小時 K 線（5 天），日線形成需 48 根，故日線確認度不足，採保守評估。上行概率降至 0.58，反映長期展望樂觀但不確定性增大。\n\n結論: 日線級別結構支持上升預期，但缺乏充足數據確認，維持溫和看多，預期向上至 $80,011，支撐 $76,600。\n\n價格區間: $76,600-$80,011\n上行概率: 0.58\n觸發條件: 做多 > $79,000; 做空 < $77,500\n\n## 段 7:風險提示\n\n推理: 15 分鐘 BB 極度窄幅 (0.31%) 表明波動性壓縮，一旦釋放可能造成急速波動。RSI 15 分鐘已 65.4，短期過度買進風險明顯。成交量比 0.31 倍遠低於平均 (1.0)，缺乏新增買方確認，上升可能面臨量能不足的挑戰。若價格跌破 $77,800 將破壞 1 小時結構，啟動回吐模式。黑天鵝風險：宏觀政策變化、大幣量轉移、技術性爆倉級聯可能引發連鎖反應。建議在 $78,793-$79,000 設置止盈、$77,500 設置止損。\n\n結論: 上升預期成立概率高，但風險邊際已明顯，不宜激進加槓桿。短期應關注 $78,500-$78,600 支撐/阻力，量能突破為確認訊號。\n\n(非投資建議)", "narrative_sections": {"section_1": "市場總體處於短期牛市狀態，1 小時級別結構完整，中期看多。", "section_2": "15 分鐘走勢強勢但擁擠，RSI 高位、BB 窄幅、量能溫和，短期需謹慎觀察。", "section_3": "1 小時級別結構完整、動能健康、支撐堅實，是上升趨勢的核心周期。", "section_4": "1 小時看多信號清晰，預期向上突破至 $78,793，支撐 $77,818。", "section_5": "4 小時級別維持牛市預期，預期向上至 $79,182，支撐 $77,429。", "section_6": "日線級別結構支持上升預期，預期向上至 $80,011，支撐 $76,600。", "section_7": "上升預期成立概率高，但風險邊際已明顯，不宜激進加槓桿。"}, "structured_forecast": {"horizon_1h": {"price_range": {"low": 77818, "high": 78793}, "probability_up": 0.65, "trigger_long_above": 78510, "trigger_short_below": 77950, "key_reasoning": "RSI 62.8 強勢未超買，MACD 正直方圖，結構完整 (close>SMA50>SMA200)，BB 上軌 $78,575 即將觸及。"}, "horizon_4h": {"price_range": {"low": 77429, "high": 79182}, "probability_up": 0.62, "trigger_long_above": 78650, "trigger_short_below": 77800, "key_reasoning": "ATR 487.3 × 1.8 倍數 = 876.1；結構延伸有效，動能傳導需確認。"}, "horizon_1d": {"price_range": {"low": 76600, "high": 80011}, "probability_up": 0.58, "trigger_long_above": 79000, "trigger_short_below": 77500, "key_reasoning": "ATR 487.3 × 3.5 倍數 = 1,706；長期 bullish 但日線數據確認不足。"}}, "input_payload": {"snapshot_at": "2026-05-02T00:00:00Z", "current_price": 78305.55, "timeframe_15m": {"rsi_14": 65.4, "macd": {"line": 245.67, "signal": 120.84, "hist": 124.83}, "bollinger": {"upper": 78389.5, "middle": 78267.3, "lower": 78145.1}, "bb_width_pct": 0.31, "atr_14": 238.5, "volume_ma_20": 119.5, "volume_ratio": 0.31, "last_5_up_volume": 1088.0, "breakout_volume_confirm": false}, "timeframe_1h": {"rsi_14": 62.8, "bollinger": {"upper": 78575.2, "middle": 78289.4, "lower": 78003.6}, "atr_14": 487.3, "sma50": 77124.5, "sma200": 76405.3, "structural_bias": "bullish"}}, "rule_engine_calibration_used": {"atr_multiplier_1h": 1.0, "atr_multiplier_4h": 1.8, "atr_multiplier_1d": 3.5, "preferred_direction": "up", "probability_cap": 0.75, "volume_state": "contraction", "breakout_state": "no_breakout"}, "backtest_lessons": null, "confidence": "high", "data_quality": {"binance_calls_total": 3, "binance_calls_failed": 0, "indicators_computed_ok": true, "llm_call_attempts": 1, "llm_call_succeeded": true, "fallback_used": false, "history_jsonl_appended": true, "warnings": ["BB width 0.31% 顯示極度壓縮", "成交量比 0.31x 偏低，量能尚未確認", "僅 5 天小時資料，日線預測信心邊際"]}}, "integration": {"as_of": "2026-05-02T06:50:50Z", "headline": "BTC 站穩 78K，多空訊號全面同向偏多", "regime": "fundamentals_strong", "regime_reason": "現貨買盤、taker、深度三向同向偏多；ETF 4 月累計流入 $2.44B；SEC/CFTC 數位商品分類落地、川普戰略儲備傳重大公告，基本面與資金面同步推升。", "key_insights": [{"insight": "現貨深度比 2.74、taker 買賣比 1.77、大單訊號 net_buying 三向偏多，為 24h +1.7% 漲勢提供結構性背書。", "supporting_agents": ["market"], "supporting_data": {"depth_ratio": 2.736, "taker_ratio": 1.772, "large_signal": "net_buying"}, "confidence": "high"}, {"insight": "監管面與機構面共振：SEC/CFTC 共同認定 BTC 為數位商品、川普戰略儲備將於數週內公告、Strategy 持倉達 818k BTC，三條 high impact 主線直接降低長尾政策風險。", "supporting_agents": ["news"], "supporting_data": {"high_impact_count": 4, "key_events": ["SEC-CFTC 數位商品聲明", "川普戰略儲備 big announcement", "Strategy 818k BTC"]}, "confidence": "high"}, {"insight": "鏈上算力 964 EH/s（3 日 +12%）但 mempool 手續費僅 1 sat/vB，交易量未過熱；礦工拋售訊號 neutral，與 ETF 機構流入結構互補不衝突。", "supporting_agents": ["tech", "market"], "supporting_data": {"hashrate_eh": 963.81, "fees_sat_vb_fast": 1, "miner_signal": "neutral"}, "confidence": "medium"}, {"insight": "Agent 4 預測 1h/4h/1d 上行概率 0.65/0.62/0.58，方向與 Agent 1 即時情緒（taker buyer_aggressive、basis 中性）一致；屬 weak_confirm（基差未明顯多頭擁擠）。", "supporting_agents": ["market", "predictor"], "supporting_data": {"forecast_dir": "up", "prob_1h": 0.65, "basis_pct": -0.0072}, "confidence": "medium"}, {"insight": "權威級風險：北韓相關駭客 2026 上半累計盜竊 $577M（全行業 76%）、Wasabi $4.5-5.5M 智能合約失竊，提醒交易所/協議安全仍為長尾尾部風險。", "supporting_agents": ["news"], "supporting_data": {"north_korea_theft_usd": 577000000, "wasabi_loss_usd": 5000000}, "confidence": "high"}], "signal_alignment": {"spot_perp": "現貨溢價指數 +1.59 bps、永續基差 -0.0072%（近平水），現貨略強於衍生品，反映買盤自現貨而非槓桿驅動。", "taker_basis_depth": "taker buyer_aggressive + depth buy_support + basis neutral 三向中兩向同向偏多，第三項 neutral 不衝突。", "etf_onchain": "ETF 4 月 +$2.44B 持續流入；鏈上礦工 neutral、mempool 平靜，無對衝壓力。", "narrative_price": "新聞面（SEC/CFTC 利好+戰略儲備預告）與價格突破 $78K 同步，敘事與行情同向。", "current_vs_forecast": "Agent 4 預測 1h 區間 $77,818-$78,793 涵蓋現價 $78,305，亦對應 Agent 1 關鍵阻力 $78,940 與支撐 $78,000，彼此座標一致。", "divergence_notes": ["Agent 4 概率 0.58-0.65 與市場全面偏多訊號相比顯保守，主因 BB 寬度極窄 0.31% + 成交量比 0.31x（量能未確認），預測模型對突破信心邊際。"]}, "prediction_alignment": {"agent4_direction": "up (probability 0.65)", "agent1_sentiment": "bullish (taker+depth+large 三項偏多, basis neutral)", "alignment_status": "weak_confirm", "alignment_note": "方向同向，但 Agent 4 量能訊號偏 contraction，預測對短線突破採保守概率。建議觀察 $78,510 突破 + 成交量 >1.5x 確認，否則 RSI 高位伴隨 BB 窄幅可能誘發短期回吐。"}, "watch_list": [{"item": "$78,940 阻力 (24h 高)+$79,491 (3d 高聚集)", "why": "Agent 1 關鍵阻力；突破後上看 $80K 心理整數"}, {"item": "$77,800-$78,000 支撐區", "why": "Agent 4 1h 區間下緣 + Agent 1 心理位 + BB 中軌附近"}, {"item": "川普戰略儲備正式公告日", "why": "Agent 2 high impact 預告事件，可能觸發瞬間 >3% 波動"}, {"item": "FOMC 5/15 鮑威爾任期結束後 Fed 主席接任人選", "why": "Agent 2 high impact 政策不確定性"}, {"item": "15m BB 寬度 0.31% 極度壓縮", "why": "波動性釋放可能伴隨大量量能異動，留意成交量比 >1.5x 的方向確認"}]}}</script>
 <script>
-(function() {
-  const D = JSON.parse(document.getElementById('dashboard-data').textContent);
-  const fmt = n => n == null ? '—' : (typeof n === 'number' ? n.toLocaleString('en-US', {maximumFractionDigits: 2}) : n);
-  const fmtUsd = n => n == null ? '—' : '$' + Number(n).toLocaleString('en-US', {maximumFractionDigits: 2});
-  const pct = n => (n == null ? '—' : (n >= 0 ? '+' : '') + n.toFixed(2) + '%');
-  const colorFor = v => v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : 'var(--muted)';
+const candles = [{"t": "2026-04-29 16:00", "close": 77557.61, "high": 77921.35, "low": 76950.27, "open": 77035.02, "vol": 540.04}, {"t": "2026-04-29 20:00", "close": 75902.05, "high": 77586.9, "low": 75693.68, "open": 77557.61, "vol": 1513.19}, {"t": "2026-04-30 00:00", "close": 75560.9, "high": 76267.55, "low": 74929.7, "open": 75919.91, "vol": 1198.05}, {"t": "2026-04-30 04:00", "close": 75782.69, "high": 76097.14, "low": 75482.06, "open": 75556.35, "vol": 669.77}, {"t": "2026-04-30 08:00", "close": 75936.53, "high": 76472.81, "low": 75471.64, "open": 75782.7, "vol": 954.84}, {"t": "2026-04-30 12:00", "close": 76160.35, "high": 76179.65, "low": 75312.54, "open": 75926.61, "vol": 421.2}, {"t": "2026-04-30 16:00", "close": 76061.86, "high": 76366.69, "low": 75860.4, "open": 76169.32, "vol": 381.45}, {"t": "2026-04-30 20:00", "close": 76475.16, "high": 76684.76, "low": 76035.19, "open": 76063.8, "vol": 1226.0}, {"t": "2026-05-01 00:00", "close": 76420.96, "high": 76543.1, "low": 76095.68, "open": 76479.07, "vol": 723.65}, {"t": "2026-05-01 04:00", "close": 76350.42, "high": 76579.61, "low": 76201.05, "open": 76420.97, "vol": 357.2}, {"t": "2026-05-01 08:00", "close": 77129.0, "high": 77467.99, "low": 76313.76, "open": 76355.09, "vol": 540.16}, {"t": "2026-05-01 12:00", "close": 77132.8, "high": 77205.31, "low": 76862.05, "open": 77126.73, "vol": 360.31}, {"t": "2026-05-01 16:00", "close": 77453.0, "high": 77610.12, "low": 77039.76, "open": 77131.4, "vol": 283.87}, {"t": "2026-05-01 20:00", "close": 78449.94, "high": 78940.56, "low": 77409.01, "open": 77460.51, "vol": 1479.61}, {"t": "2026-05-02 00:00", "close": 78369.47, "high": 78713.32, "low": 78119.34, "open": 78444.99, "vol": 884.79}, {"t": "2026-05-02 04:00", "close": 78231.67, "high": 78440.03, "low": 77743.58, "open": 78367.92, "vol": 475.2}, {"t": "2026-05-02 08:00", "close": 78419.48, "high": 78529.99, "low": 78166.26, "open": 78231.67, "vol": 211.01}, {"t": "2026-05-02 12:00", "close": 78225.0, "high": 78458.16, "low": 78040.75, "open": 78422.39, "vol": 150.39}, {"t": "2026-05-02 16:00", "close": 78350.4, "high": 78358.99, "low": 78162.78, "open": 78231.98, "vol": 19.06}];
+const insights = [{"insight": "短期動能信號分歧：15m MACD 連 8 根正柱 vs 1h MACD 連 12 根負柱，反映多時間框架共振破裂", "supporting_agents": ["predictor"], "supporting_data": {"15m_consec": 8, "1h_consec": -12}, "confidence": "high"}, {"insight": "微結構三向訊號全中性：taker 0.913、basis +0.005%、depth 0.81，市場無共識方向", "supporting_agents": ["market"], "supporting_data": {"taker_ratio": 0.913, "basis_pct": 0.0055, "depth_ratio": 0.81}, "confidence": "high"}, {"insight": "宏觀有兩股力道對沖：ETF 月度流入 24 億、白宮戰略 BTC 儲備暗示利多，Powell 任期將盡 + Warsh 提名增添政策不確定性", "supporting_agents": ["news", "market"], "supporting_data": {"april_etf_inflow_b": 2.44, "fed_chair_change_eta": "2026-05-15"}, "confidence": "medium"}, {"insight": "礦工持續分發 + 難度即將下調：Q1 礦工賣出 32k+ BTC，下次難度預計 -1.76%；改善現金流可能緩解短期賣壓", "supporting_agents": ["tech"], "supporting_data": {"q1_miner_sells_btc": 32000, "next_diff_change_pct": -1.76}, "confidence": "medium"}, {"insight": "閃電網路容量穩步成長 (3 日 +3%)，鏈下生態擴張穩健；Taproot Assets 多資產 Lightning 與 L402 升級延續長期看好", "supporting_agents": ["tech"], "supporting_data": {"ln_capacity_btc": 2837.23, "ln_capacity_change_3d_pct": 3.0}, "confidence": "medium"}, {"insight": "$629M 4 月駭客損失創紀錄，但對 BTC 直接影響有限（多為 DeFi/協議攻擊），中期可能加重監管壓力", "supporting_agents": ["news"], "supporting_data": {"april_hack_losses_usd_m": 629}, "confidence": "high"}];
+const events = [{"id": "n1", "title": "ARK Invest Projects Bitcoin Market Cap to Reach $16T by 2030", "title_zh": "ARK Invest 預測比特幣市值將於 2030 年達 16 兆美元", "summary": "Cathie Wood 的 ARK Invest 發布報告，預測加密貨幣總市值將在 2030 年達 28 兆美元，其中比特幣市值預計飆升至 16 兆美元，較目前水準成長逾十倍。", "category": "macro", "impact": "medium", "impact_reason": "長期機構資金流入預期，影響市場情緒", "source": {"name": "CoinDesk", "url": "https://www.coindesk.com/markets/2026/05/01/institutional-demand-to-drive-bitcoin-market-cap-to-usd16-trillion-by-2030-ark-invest", "source_tier": "mainstream"}, "secondary_sources": [], "published_at": "2026-05-01T00:00:00Z", "region": "US", "related_assets": ["BTC"]}, {"id": "n2", "title": "Bitcoin Mining Difficulty Adjustment to Reduce Around May 2", "title_zh": "比特幣挖礦難度於 5 月初預計向下調整", "summary": "鏈上資料顯示下次難度調整預計約下降 1.76%，將改善礦工現金流並可能減輕被動拋售壓力。", "category": "macro", "impact": "low", "impact_reason": "中性偏多訊號，影響有限", "source": {"name": "mempool.space", "url": "https://mempool.space/api/v1/difficulty-adjustment", "source_tier": "primary"}, "secondary_sources": [], "published_at": "2026-05-02T00:00:00Z", "region": "Global", "related_assets": ["BTC"]}, {"id": "n3", "title": "April 2026 Crypto Hacks Reach Record $629M", "title_zh": "2026 年 4 月加密駭客損失創紀錄達 6.29 億美元", "summary": "4 月共發生約 28-30 起加密協議事件，損失合計 6.29 億美元，創單月新高。其中 Drift Protocol 與 KelpDAO 兩起事件合占近九成。", "category": "security", "impact": "high", "impact_reason": "創紀錄安全事件，可能短期壓抑風險偏好", "source": {"name": "DefiLlama via news.bitcoin.com", "url": "https://news.bitcoin.com/defillama-confirms-april-2026-as-cryptos-most-hacked-month-with-30-incidents/", "source_tier": "crypto_native"}, "secondary_sources": [{"name": "CoinDesk Drift", "url": "https://www.coindesk.com/tech/2026/04/01/drift-protocol-exploited-285m"}, {"name": "CoinDesk KelpDAO", "url": "https://www.coindesk.com/tech/2026/04/19/2026-s-biggest-crypto-exploit-kelp-dao-hit-for-usd292-million"}], "published_at": "2026-04-30T00:00:00Z", "region": "Global", "related_assets": ["BTC", "ETH"]}, {"id": "n4", "title": "Canada Proposes Federal Ban on Crypto ATMs", "title_zh": "加拿大提案聯邦禁用加密 ATM", "summary": "加拿大政府宣佈研擬全國禁用加密 ATM，原因是相關詐騙案件 2025 年已逾 7 億美元。預期將提交國會審議。", "category": "regulation", "impact": "medium", "impact_reason": "北美主要司法管轄區的負面監管行動，影響散戶通路", "source": {"name": "CoinDesk", "url": "https://www.coindesk.com/markets/2026/04/29/canada-proposes-ban-on-bitcoin-atms-as-fraud-cases-mount", "source_tier": "mainstream"}, "secondary_sources": [{"name": "CBC News", "url": "https://www.cbc.ca/news/canada/toronto/canada-crypto-atm-ban-scammers-9.7180642"}], "published_at": "2026-04-28T00:00:00Z", "region": "Other", "related_assets": ["BTC"]}, {"id": "n5", "title": "Senate Democrats Warn SEC Crypto Exemptions May Weaken Investor Protections", "title_zh": "參議院民主黨警告 SEC 加密豁免可能削弱投資者保護", "summary": "Elizabeth Warren 與 Chris Van Hollen 致函 SEC 主席 Atkins，指其新加密指引中的豁免條款可能讓較大市場部分脫離規管。要求 5 月 8 日前回應。", "category": "regulation", "impact": "medium", "impact_reason": "美國監管政策歧異，將維持政策不確定性", "source": {"name": "news.bitcoin.com", "url": "https://news.bitcoin.com/senate-democrats-warn-sec-crypto-exemptions-may-undermine-investor-protections/", "source_tier": "crypto_native"}, "secondary_sources": [], "published_at": "2026-04-30T00:00:00Z", "region": "US", "related_assets": ["BTC"]}, {"id": "n6", "title": "White House Hints at Strategic Bitcoin Reserve Announcement", "title_zh": "白宮暗示戰略比特幣儲備重大公告即將釋出", "summary": "白宮加密顧問暗示川普政府戰略比特幣儲備細節將於未來數週公佈，預期於 7 月 22 日監管報告期限前完成，傾向以非新增稅金方式累積 BTC。", "category": "macro", "impact": "high", "impact_reason": "主權級採用訊號，將直接影響市場結構", "source": {"name": "spotedcrypto.com aggregate", "url": "https://www.spotedcrypto.com/bitcoin-news-today-may-2026/", "source_tier": "crypto_native"}, "secondary_sources": [{"name": "News Bitcoin", "url": "https://news.bitcoin.com/"}], "published_at": "2026-05-01T00:00:00Z", "region": "US", "related_assets": ["BTC"]}, {"id": "n7", "title": "Kevin Warsh Advances as Trump's Fed Chair Replacement (Senate Banking 13-11)", "title_zh": "Warsh 獲川普提名出任聯儲主席，銀行委員會 13-11 通過", "summary": "參議院銀行委員會以黨派票數通過 Kevin Warsh 任聯儲主席提名。Powell 任期 5 月 15 日到期，市場預期貨幣政策可能轉向。", "category": "macro", "impact": "high", "impact_reason": "聯儲領導層更迭可能改變寬鬆預期，對 BTC 為價值儲存資產的定位有實質影響", "source": {"name": "Bitget News aggregate", "url": "https://www.bitget.com/amp/news/detail/12560605072652", "source_tier": "crypto_native"}, "secondary_sources": [], "published_at": "2026-04-29T00:00:00Z", "region": "US", "related_assets": ["BTC"]}, {"id": "n8", "title": "April Spot Bitcoin ETF Inflows Hit $2.44B", "title_zh": "4 月現貨比特幣 ETF 月度淨流入達 24.4 億美元", "summary": "儘管 4 月底有單日 1.48 億美元淨流出，4 月總體現貨 BTC ETF 淨流入估約 24.4 億美元，為 2025 年 10 月以來最強月份。", "category": "adoption", "impact": "medium", "impact_reason": "機構配置動能延續，中期支撐", "source": {"name": "CoinDesk", "url": "https://www.coindesk.com/markets/2026/05/01/institutional-demand-to-drive-bitcoin-market-cap-to-usd16-trillion-by-2030-ark-invest", "source_tier": "mainstream"}, "secondary_sources": [], "published_at": "2026-04-30T00:00:00Z", "region": "US", "related_assets": ["BTC"]}, {"id": "n9", "title": "Saylor Reaffirms Bitcoin Winter Is Over", "title_zh": "Saylor 再表態：比特幣寒冬已過", "summary": "MicroStrategy 執行主席 Saylor 於近期受訪重申加密寒冬已結束，BTC 維持 $78k 上方為健康整理。", "category": "corporate", "impact": "low", "impact_reason": "個人言論影響短期情緒", "source": {"name": "CoinDesk", "url": "https://www.coindesk.com/markets/2026/04/23/michael-saylor-says-the-bitcoin-winter-is-over-some-experts-agree-with-caveats", "source_tier": "mainstream"}, "secondary_sources": [], "published_at": "2026-04-30T00:00:00Z", "region": "US", "related_assets": ["BTC"]}, {"id": "n10", "title": "Hong Kong Issues First Stablecoin Licences (HSBC, Anchorpoint)", "title_zh": "香港核發首批穩定幣牌照（HSBC 與 Anchorpoint）", "summary": "香港金管局依《穩定幣條例》核發首批牌照，要求 100% 高品質流動資產備付。亞洲穩定幣監管框架成形。", "category": "regulation", "impact": "medium", "impact_reason": "亞洲區塊鏈金融基建升級，間接利好 BTC 流動性", "source": {"name": "spotedcrypto.com", "url": "https://www.spotedcrypto.com/global-crypto-regulation-wave-2026/", "source_tier": "crypto_native"}, "secondary_sources": [], "published_at": "2026-04-30T00:00:00Z", "region": "Asia", "related_assets": ["BTC"]}];
+const watchList = [{"item": "1h MACD 柱是否在下 4-8 根回升至正", "trigger": "MACD hist 由 -66 翻正", "implication": "若反轉，將解除短期動能衰退警示"}, {"item": "突破 $78,895 / $78,940 三日高點", "trigger": "4h 站上且伴隨量能 1.5x MA", "implication": "可能挑戰 $79,500 心理關"}, {"item": "回踩 $77,228 / $77,150 24h 低", "trigger": "跌破且 1h 收盤確認", "implication": "短線轉弱，目標 $76,500 缺口"}, {"item": "Powell 5/15 任期屆滿前後 Fed 政策訊號", "trigger": "FOMC 預期變化 / Warsh 表態", "implication": "宏觀寬鬆預期變動將直接影響風險資產"}, {"item": "白宮戰略 BTC 儲備細節公佈", "trigger": "7/22 截止前任何公告", "implication": "可能引發 +5% 以上短線跳空"}, {"item": "ETF 5 月首週日級流向", "trigger": "farside 等資料源恢復或新數據點", "implication": "確認月度趨勢延續性"}];
 
-  // ===== HEADER =====
-  document.getElementById('regime-chip').textContent = D.integration.regime + ' · ' + D.integration.headline;
-  document.getElementById('headline-text').textContent = D.integration.regime_reason;
-  const px = D.market.spot_summary.current_usd;
-  const ch24 = D.market.spot_summary.change_24h_pct;
-  const ch3d = D.market.spot_summary.change_3d_pct;
-  document.getElementById('price-now').textContent = fmtUsd(D.market.spot_summary.index_price_usd);
-  const pcDiv = document.getElementById('price-change');
-  pcDiv.innerHTML = `<span style="color:${colorFor(ch24)}">24h ${pct(ch24)}</span> · <span style="color:${colorFor(ch3d)}">3d ${pct(ch3d)}</span>`;
-  document.getElementById('as-of').textContent = D.as_of;
-  document.getElementById('data-window').textContent = D.market.data_window;
+const ig = document.getElementById('insights-grid');
+insights.forEach(ins => {
+  const cmap = {high:'#22c55e', medium:'#f7931a', low:'#ef4444'};
+  const div = document.createElement('div');
+  div.className = 'p-3 rounded';
+  div.style.background = 'var(--card2)';
+  div.style.borderLeft = '3px solid ' + (cmap[ins.confidence] || '#a3a3a3');
+  div.innerHTML = `<div class="text-sm">${ins.insight}</div><div class="text-xs mt-2" style="color:var(--mute);">支援 Agent: ${ins.supporting_agents.join(', ')} ｜ 置信度: <span style="color:${cmap[ins.confidence]||'#a3a3a3'};font-weight:600;">${ins.confidence}</span></div>`;
+  ig.appendChild(div);
+});
 
-  // ===== INTEGRATION =====
-  const ki = document.getElementById('key-insights');
-  D.integration.key_insights.forEach(ins => {
-    const conf = ins.confidence;
-    const colorMap = {high: 'var(--green)', medium: 'var(--orange)', low: 'var(--muted)'};
-    const c = colorMap[conf] || 'var(--muted)';
-    const div = document.createElement('div');
-    div.className = 'panel p-3';
-    div.style.background = 'var(--panel-2)';
-    div.style.borderLeft = `3px solid ${c}`;
-    div.innerHTML = `
-      <div class="text-sm leading-relaxed">${ins.insight}</div>
-      <div class="mt-2 flex items-center gap-2 text-xs" style="color: var(--muted);">
-        <span class="chip" style="border:1px solid ${c}; color: ${c};">信心 ${conf}</span>
-        <span>支撐 Agent: ${ins.supporting_agents.join(', ')}</span>
-      </div>`;
-    ki.appendChild(div);
-  });
+const wl = document.getElementById('watch-list');
+watchList.forEach((w, i) => {
+  const div = document.createElement('div');
+  div.className = 'p-2 rounded text-xs';
+  div.style.background = 'var(--card2)';
+  div.innerHTML = `<div><b>${i+1}. ${w.item}</b></div><div style="color:var(--mute);" class="mt-1">觸發: <span class="kbd">${w.trigger}</span> ｜ 含義: ${w.implication}</div>`;
+  wl.appendChild(div);
+});
 
-  // Signal lights
-  const sa = D.integration.signal_alignment;
-  const sl = document.getElementById('signal-lights');
-  const items = [
-    {label: '現貨/永續', text: sa.spot_perp, color: 'var(--green)'},
-    {label: 'Taker+Basis+Depth', text: sa.taker_basis_depth, color: 'var(--green)'},
-    {label: 'ETF/鏈上', text: sa.etf_onchain, color: 'var(--green)'},
-    {label: '敘事/價格', text: sa.narrative_price, color: 'var(--green)'},
-    {label: '當前 vs 預測', text: sa.current_vs_forecast, color: 'var(--orange)'}
-  ];
-  items.forEach(it => {
-    const row = document.createElement('div');
-    row.className = 'flex items-start gap-3 text-xs';
-    row.innerHTML = `
-      <span class="signal-light mt-1" style="color:${it.color}; background:${it.color};"></span>
-      <div class="flex-1"><div class="font-semibold mb-1">${it.label}</div><div style="color: var(--muted);">${it.text}</div></div>`;
-    sl.appendChild(row);
-  });
+const ctx = document.getElementById('kchart').getContext('2d');
+const labels = candles.map(c => c.t.slice(5));
+const closes = candles.map(c => c.close);
+const isLast = (i) => i === candles.length - 1;
 
-  // Prediction alignment card
-  const pa = D.integration.prediction_alignment;
-  const paStatus = pa.alignment_status;
-  const paColor = paStatus.includes('strong') ? 'var(--green)' : paStatus.includes('weak') ? 'var(--orange)' : 'var(--red)';
-  document.getElementById('pred-align').innerHTML = `
-    <div class="text-xs mb-1" style="color: var(--muted);">方向</div>
-    <div class="font-semibold mb-2">${pa.agent4_direction}</div>
-    <div class="text-xs mb-1" style="color: var(--muted);">市場情緒</div>
-    <div class="font-semibold mb-2">${pa.agent1_sentiment}</div>
-    <span class="chip" style="border: 1px solid ${paColor}; color: ${paColor};">對齊狀態 ${paStatus}</span>
-    <div class="mt-2 text-xs" style="color: var(--muted);">${pa.alignment_note}</div>`;
-
-  // Watch list
-  const wl = document.getElementById('watch-list');
-  D.integration.watch_list.forEach(w => {
-    const li = document.createElement('li');
-    li.innerHTML = `<span class="font-semibold">${w.item}</span> <span style="color: var(--muted);">— ${w.why}</span>`;
-    wl.appendChild(li);
-  });
-
-  // ===== MARKET =====
-  const m = D.market;
-  // Kline
-  const candles = [
-    // ordered oldest -> newest from agent1's data window (we need to use the sample data we collected)
-  ];
-  // Use the candle list embedded — we'll inject via market.spot_summary; instead rely on bundled sample via fixed list
-  const klineCtx = document.getElementById('kline-chart').getContext('2d');
-  const recentCandles = [{"t": "2026-04-29T08:00:00Z", "o": 77035.02, "h": 77921.35, "l": 76950.27, "c": 77557.61}, {"t": "2026-04-29T12:00:00Z", "o": 77557.61, "h": 77586.9, "l": 75693.68, "c": 75902.05}, {"t": "2026-04-29T16:00:00Z", "o": 75919.91, "h": 76267.55, "l": 74929.7, "c": 75560.9}, {"t": "2026-04-29T20:00:00Z", "o": 75556.35, "h": 76097.14, "l": 75482.06, "c": 75782.69}, {"t": "2026-04-30T00:00:00Z", "o": 75782.7, "h": 76472.81, "l": 75471.64, "c": 75936.53}, {"t": "2026-04-30T04:00:00Z", "o": 75926.61, "h": 76179.65, "l": 75312.54, "c": 76160.35}, {"t": "2026-04-30T08:00:00Z", "o": 76169.32, "h": 76366.69, "l": 75860.4, "c": 76061.86}, {"t": "2026-04-30T12:00:00Z", "o": 76063.8, "h": 76684.76, "l": 76035.19, "c": 76475.16}, {"t": "2026-04-30T16:00:00Z", "o": 76479.07, "h": 76543.1, "l": 76095.68, "c": 76420.96}, {"t": "2026-04-30T20:00:00Z", "o": 76420.97, "h": 76579.61, "l": 76201.05, "c": 76350.42}, {"t": "2026-05-01T00:00:00Z", "o": 76355.09, "h": 77467.99, "l": 76313.76, "c": 77129.0}, {"t": "2026-05-01T04:00:00Z", "o": 77126.73, "h": 77205.31, "l": 76862.05, "c": 77132.8}, {"t": "2026-05-01T08:00:00Z", "o": 77131.4, "h": 77610.12, "l": 77039.76, "c": 77453.0}, {"t": "2026-05-01T12:00:00Z", "o": 77460.51, "h": 78940.56, "l": 77409.01, "c": 78449.94}, {"t": "2026-05-01T16:00:00Z", "o": 78444.99, "h": 78713.32, "l": 78119.34, "c": 78369.47}, {"t": "2026-05-01T20:00:00Z", "o": 78367.92, "h": 78440.03, "l": 77743.58, "c": 78231.67}, {"t": "2026-05-02T00:00:00Z", "o": 78231.67, "h": 78529.99, "l": 78166.26, "c": 78419.48}, {"t": "2026-05-02T04:00:00Z", "o": 78422.39, "h": 78458.16, "l": 78040.75, "c": 78305.52}];
-  // Latest unconfirmed
-  const labels = recentCandles.map(c => c.t.slice(5,16).replace('T',' '));
-  const opens = recentCandles.map(c => c.o);
-  const closes = recentCandles.map(c => c.c);
-  const highs = recentCandles.map(c => c.h);
-  const lows = recentCandles.map(c => c.l);
-  // Simple line chart of close, with shaded high-low. Mark last as dashed.
-  const lastIdx = recentCandles.length - 1;
-  new Chart(klineCtx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Close',
-          data: closes,
-          borderColor: 'var(--orange)',
-          borderDash: ctx => ctx.p0DataIndex === lastIdx - 1 ? [6,4] : undefined,
-          segment: {
-            borderDash: ctx => ctx.p0DataIndex === lastIdx - 1 ? [6,4] : undefined,
-            borderColor: ctx => ctx.p0DataIndex === lastIdx - 1 ? '#fcd34d' : '#f7931a',
-          },
-          backgroundColor: 'rgba(247,147,26,.15)',
-          fill: false,
-          tension: 0.25,
-          pointRadius: 1.5,
-          pointBackgroundColor: ctx => ctx.dataIndex === lastIdx ? '#fcd34d' : '#f7931a'
-        },
-        {
-          label: 'High',
-          data: highs,
-          borderColor: 'rgba(34,197,94,.4)',
-          borderWidth: 1,
-          pointRadius: 0,
-          fill: false,
-          tension: 0.2
-        },
-        {
-          label: 'Low',
-          data: lows,
-          borderColor: 'rgba(239,68,68,.4)',
-          borderWidth: 1,
-          pointRadius: 0,
-          fill: false,
-          tension: 0.2
-        }
-      ]
-    },
-    options: {
-      maintainAspectRatio: false,
-      scales: {
-        x: { ticks: { color: '#9ca3af', font: { size: 9 }, maxRotation: 60, autoSkip: true, maxTicksLimit: 8 }, grid: { color: 'rgba(255,255,255,.04)' } },
-        y: { ticks: { color: '#9ca3af', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.04)' } }
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [
+      { label: 'BTC Close', data: closes, borderColor: '#f7931a', backgroundColor: 'rgba(247,147,26,0.1)', tension: 0.2,
+        pointRadius: candles.map((c,i) => isLast(i) ? 6 : 2),
+        pointBackgroundColor: candles.map((c,i) => isLast(i) ? '#a855f7' : '#f7931a'),
+        fill: true,
+        segment: { borderDash: ctx => ctx.p1DataIndex === closes.length-1 ? [6,4] : undefined }
       },
-      plugins: { legend: { labels: { color: '#9ca3af', font: { size: 11 } } }, tooltip: { mode: 'index', intersect: false } }
+      { label: 'High', data: candles.map(c => c.high), borderColor: 'rgba(34,197,94,0.4)', borderWidth: 1, pointRadius: 0, fill: false, borderDash: [3,3] },
+      { label: 'Low', data: candles.map(c => c.low), borderColor: 'rgba(239,68,68,0.4)', borderWidth: 1, pointRadius: 0, fill: false, borderDash: [3,3] }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: {labels: {color: '#e5e5e5', font: {size: 10}}}, tooltip: {mode: 'index', intersect: false} },
+    scales: {
+      x: {ticks: {color: '#a3a3a3', font: {size: 9}, maxRotation: 60, autoSkip: true, maxTicksLimit: 12}, grid: {color: '#1f1f1f'}},
+      y: {ticks: {color: '#a3a3a3', font: {size: 10}}, grid: {color: '#1f1f1f'}}
     }
-  });
-  document.getElementById('kline-note').textContent = m.spot_summary.latest_candle_unconfirmed.reason;
+  }
+});
 
-  // Cards
-  document.getElementById('basis-pct').textContent = m.perpetual.basis_pct + '%';
-  document.getElementById('basis-signal').textContent = m.perpetual.basis_signal;
-  document.getElementById('basis-signal').style.color = m.perpetual.basis_signal === 'neutral' ? 'var(--muted)' : (m.perpetual.basis_signal.startsWith('long') ? 'var(--green)' : 'var(--red)');
-  document.getElementById('depth-ratio').textContent = m.order_book_snapshot.depth_ratio.toFixed(2);
-  const dsig = m.order_book_snapshot.interpretation;
-  document.getElementById('depth-signal').textContent = dsig;
-  document.getElementById('depth-signal').style.color = dsig === 'buy_support' ? 'var(--green)' : dsig === 'sell_pressure' ? 'var(--red)' : 'var(--muted)';
-  document.getElementById('taker-ratio').textContent = m.trade_flow_recent.taker_flow.buy_sell_ratio.toFixed(2);
-  const tsig = m.trade_flow_recent.taker_flow.signal;
-  document.getElementById('taker-signal').textContent = tsig;
-  document.getElementById('taker-signal').style.color = tsig === 'buyer_aggressive' ? 'var(--green)' : tsig === 'seller_aggressive' ? 'var(--red)' : 'var(--muted)';
-  document.getElementById('oi-usd').textContent = '$' + m.perpetual.OI_usd_m.toFixed(1) + 'M';
-  document.getElementById('oi-btc').textContent = m.perpetual.OI_btc.toFixed(0) + ' BTC';
+const tl = document.getElementById('news-timeline');
+function impactColor(im) {return {high:'#ef4444',medium:'#f7931a',low:'#a3a3a3'}[im]||'#a3a3a3';}
+function regionColor(r) {return {US:'#1e3a8a',Asia:'#581c87',Global:'#15803d',EU:'#7c2d12',Other:'#3a3a3a'}[r]||'#3a3a3a';}
+let allNews = events.slice().sort((a,b)=>b.published_at.localeCompare(a.published_at));
 
-  // Large trades
-  const lt = m.trade_flow_recent.large_trades;
-  document.getElementById('large-trades-info').innerHTML = `
-    <div class="flex items-center gap-2 mt-1">
-      <span class="text-lg font-semibold" style="color:${lt.signal === 'net_buying' ? 'var(--green)' : lt.signal === 'net_selling' ? 'var(--red)' : 'var(--muted)'}">${lt.signal}</span>
-      ${lt.threshold_adjusted ? '<span class="badge-tier">閾值已調整 $'+lt.threshold_used.toLocaleString()+'</span>' : ''}
-      ${lt.venue_too_thin ? '<span class="badge-tier" style="color:#fcd34d">venue_too_thin</span>' : ''}
-    </div>
-    <div class="text-xs mt-1" style="color: var(--muted);">買 ${lt.buy_count} 筆 ($${(lt.buy_value_usd/1000).toFixed(1)}k) / 賣 ${lt.sell_count} 筆 ($${(lt.sell_value_usd/1000).toFixed(1)}k)</div>
-    <div class="text-xs" style="color: var(--muted);">${lt.narrative}</div>`;
-
-  // ETF chart
-  const etf = m.etf_flows;
-  document.getElementById('etf-verify').textContent = etf.verification_status;
-  const etfCtx = document.getElementById('etf-chart').getContext('2d');
-  const etfLabels = etf.by_day.map(d => d.date);
-  const etfFlows = etf.by_day.map(d => d.net_flow_usd_m);
-  new Chart(etfCtx, {
-    type: 'bar',
-    data: { labels: etfLabels, datasets: [{ label: '淨流入 ($M)', data: etfFlows, backgroundColor: etfFlows.map(v => v >= 0 ? 'rgba(34,197,94,.6)' : 'rgba(239,68,68,.6)'), borderColor: etfFlows.map(v => v >= 0 ? '#22c55e' : '#ef4444'), borderWidth: 1 }] },
-    options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#9ca3af', font: { size: 9 } }, grid: { display: false } }, y: { ticks: { color: '#9ca3af', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } } } }
-  });
-  document.getElementById('etf-context').textContent = etf.monthly_context + (etf.data_quality_note ? ' · ' + etf.data_quality_note : '');
-
-  // Cross-asset
-  const xa = m.cross_asset_correlation;
-  const xg = document.getElementById('xasset-grid');
-  const xitems = [['vs SPX', xa.vs_spx], ['vs Gold', xa.vs_gold], ['vs DXY', xa.vs_dxy]];
-  xitems.forEach(([k, v]) => {
+function renderNews(list) {
+  tl.innerHTML = '';
+  list.forEach(e => {
     const div = document.createElement('div');
-    div.className = 'panel p-2';
-    div.style.background = 'var(--panel)';
-    div.innerHTML = `<div class="font-semibold" style="color: var(--muted);">${k}</div><div>${v.direction}</div><div style="color: var(--muted);">${v.magnitude_30d}</div>`;
-    xg.appendChild(div);
-  });
-  document.getElementById('xasset-narr').textContent = xa.narrative;
-
-  // ===== PREDICTOR =====
-  const pr = D.predictor;
-  const conf = pr.confidence;
-  const confColor = conf === 'high' ? 'var(--green)' : conf === 'medium' ? 'var(--orange)' : 'var(--red)';
-  document.getElementById('pred-status').innerHTML = `
-    <span class="chip chip-purple">model: ${pr.model_used}</span>
-    <span class="chip" style="border:1px solid ${confColor}; color:${confColor}">conf: ${conf}</span>
-    <span class="chip chip-low">回測命中率: 暫無資料</span>`;
-  if (pr.data_quality.fallback_used) document.getElementById('fallback-banner').classList.remove('hidden');
-
-  const pcards = document.getElementById('pred-cards');
-  ['horizon_1h','horizon_4h','horizon_1d'].forEach(h => {
-    const f = pr.structured_forecast[h];
-    const horizonName = h.replace('horizon_','').toUpperCase();
-    const probPct = (f.probability_up * 100).toFixed(0);
-    const probColor = f.probability_up >= 0.6 ? 'var(--green)' : f.probability_up <= 0.4 ? 'var(--red)' : 'var(--orange)';
-    const card = document.createElement('div');
-    card.className = 'panel p-4';
-    card.style.background = 'var(--panel-2)';
-    card.style.borderTop = '3px solid var(--purple)';
-    card.innerHTML = `
-      <div class="text-xs mb-2" style="color: var(--muted);">${horizonName} 預測</div>
-      <div class="text-xl font-bold mb-1">$${fmt(f.price_range.low)} – $${fmt(f.price_range.high)}</div>
-      <div class="flex items-center gap-2 mb-2">
-        <div class="progress flex-1"><div class="progress-bar" style="width:${probPct}%;"></div></div>
-        <span class="text-sm font-semibold" style="color:${probColor}">P=${f.probability_up.toFixed(2)}</span>
-      </div>
-      <div class="text-xs mb-2" style="color: var(--muted);">
-        <div>做多 > <span style="color:var(--green)">$${fmt(f.trigger_long_above)}</span></div>
-        <div>做空 < <span style="color:var(--red)">$${fmt(f.trigger_short_below)}</span></div>
-      </div>
-      <div class="text-xs" style="color: var(--muted); border-top: 1px solid var(--border); padding-top: 8px;">${f.key_reasoning}</div>`;
-    pcards.appendChild(card);
-  });
-  document.getElementById('pred-narrative').textContent = pr.narrative_full;
-  // Indicators
-  const ip = pr.input_payload;
-  const indHtml = `
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-      <div><div style="color:var(--muted)">15m RSI(14)</div><div class="font-semibold">${ip.timeframe_15m.rsi_14}</div></div>
-      <div><div style="color:var(--muted)">15m MACD hist</div><div class="font-semibold">${ip.timeframe_15m.macd.hist}</div></div>
-      <div><div style="color:var(--muted)">15m BB width</div><div class="font-semibold">${ip.timeframe_15m.bb_width_pct}%</div></div>
-      <div><div style="color:var(--muted)">1h RSI(14)</div><div class="font-semibold">${ip.timeframe_1h.rsi_14}</div></div>
-      <div><div style="color:var(--muted)">1h ATR(14)</div><div class="font-semibold">${ip.timeframe_1h.atr_14}</div></div>
-      <div><div style="color:var(--muted)">1h Structural</div><div class="font-semibold" style="color:var(--green)">${ip.timeframe_1h.structural_bias}</div></div>
-      <div><div style="color:var(--muted)">SMA50 / SMA200</div><div class="font-semibold">$${fmt(ip.timeframe_1h.sma50)} / $${fmt(ip.timeframe_1h.sma200)}</div></div>
-      <div><div style="color:var(--muted)">15m Vol Ratio</div><div class="font-semibold">${ip.timeframe_15m.volume_ratio}x</div></div>
-      <div><div style="color:var(--muted)">Current Price</div><div class="font-semibold">$${fmt(ip.current_price)}</div></div>
-    </div>
-    <div class="mt-3 text-xs" style="color:var(--muted);">校準參數：ATR 倍數 1h=${pr.rule_engine_calibration_used.atr_multiplier_1h}, 4h=${pr.rule_engine_calibration_used.atr_multiplier_4h}, 1d=${pr.rule_engine_calibration_used.atr_multiplier_1d}; 概率上限 ${pr.rule_engine_calibration_used.probability_cap}; volume_state=${pr.rule_engine_calibration_used.volume_state}; breakout_state=${pr.rule_engine_calibration_used.breakout_state}</div>`;
-  document.getElementById('pred-indicators').innerHTML = indHtml;
-
-  // ===== NEWS =====
-  const nf = document.getElementById('news-filters');
-  const filters = { region: 'all', category: 'all', highOnly: false };
-  const renderNews = () => {
-    const list = document.getElementById('news-list');
-    list.innerHTML = '';
-    const events = D.news.events
-      .filter(e => filters.region === 'all' || e.region === filters.region)
-      .filter(e => filters.category === 'all' || e.category === filters.category)
-      .filter(e => !filters.highOnly || e.impact === 'high')
-      .slice()
-      .sort((a, b) => b.published_at.localeCompare(a.published_at));
-    events.forEach(e => {
-      const impactColor = { high: 'var(--red)', medium: 'var(--orange)', low: 'var(--muted)' }[e.impact];
-      const div = document.createElement('div');
-      div.className = 'panel p-3';
-      div.style.background = 'var(--panel-2)';
-      div.style.borderLeft = `3px solid ${impactColor}`;
-      const secondary = (e.secondary_sources || []).map(s => `<a href="${s.url}" target="_blank" rel="noopener" style="color: var(--blue);">${s.name}</a>`).join(', ');
-      div.innerHTML = `
-        <div class="flex items-start justify-between gap-2 flex-wrap">
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold mb-1">${e.title_zh}</div>
-            <div class="text-xs mb-2" style="color: var(--muted);">${e.title}</div>
-            <div class="text-sm leading-relaxed">${e.summary}</div>
-            <div class="text-xs mt-2" style="color: var(--muted);">影響原因：${e.impact_reason}</div>
-          </div>
-          <div class="text-right text-xs space-y-1 shrink-0">
-            <span class="chip chip-${e.impact}">${e.impact}</span>
-            <div><span class="badge-tier">${e.region}</span></div>
-            <div><span class="badge-tier">${e.category}</span></div>
-            <div style="color: var(--muted);">${e.published_at.slice(0,10)}</div>
-          </div>
+    div.className = 'p-3 rounded';
+    div.style.background = 'var(--card2)';
+    div.style.borderLeft = '3px solid ' + impactColor(e.impact);
+    div.innerHTML = `
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex-1">
+          <div class="font-semibold text-sm">${e.title_zh}</div>
+          <div class="text-xs mt-1" style="color:var(--mute);">${e.summary}</div>
         </div>
-        <div class="mt-2 text-xs">
-          來源：<a href="${e.source.url}" target="_blank" rel="noopener" style="color: var(--blue);">${e.source.name}</a>
-          <span class="badge-tier ml-1">${e.source.source_tier}</span>
-          ${secondary ? ' · 次要：' + secondary : ''}
-        </div>`;
-      list.appendChild(div);
-    });
-  };
-  // build filter buttons
-  const regions = ['all', ...new Set(D.news.events.map(e => e.region))];
-  const categories = ['all', ...new Set(D.news.events.map(e => e.category))];
-  const mkBtn = (label, onClick) => {
-    const b = document.createElement('button');
-    b.className = 'badge-tier';
-    b.textContent = label;
-    b.style.cursor = 'pointer';
-    b.onclick = onClick;
-    return b;
-  };
-  nf.appendChild(document.createTextNode('Region:'));
-  regions.forEach(r => nf.appendChild(mkBtn(r, () => { filters.region = r; renderNews(); })));
-  nf.appendChild(document.createTextNode('  Cat:'));
-  categories.forEach(c => nf.appendChild(mkBtn(c, () => { filters.category = c; renderNews(); })));
-  const ho = mkBtn('僅高影響', () => { filters.highOnly = !filters.highOnly; ho.style.background = filters.highOnly ? 'rgba(239,68,68,.2)' : ''; renderNews(); });
-  nf.appendChild(ho);
-  renderNews();
-
-  // ===== TECH =====
-  const t = D.tech;
-  const nh = t.network_health;
-  const nhCards = document.getElementById('net-health-cards');
-  const nhItems = [
-    {l: '算力', v: fmt(nh.hashrate_eh) + ' EH/s', s: pct(nh.hashrate_change_3d_pct) + ' (3d)'},
-    {l: '下次難度調整', v: pct(nh.next_difficulty_change_pct_estimate), s: '~' + nh.next_difficulty_eta_days.toFixed(1) + ' 天'},
-    {l: '記憶池', v: fmt(nh.mempool_size_mb) + ' MB', s: fmt(nh.mempool_pending_txs) + ' txs'},
-    {l: 'Fee (fast)', v: nh.fees_sat_vb.fast + ' sat/vB', s: '低位'}
-  ];
-  nhItems.forEach(i => {
-    const div = document.createElement('div');
-    div.className = 'panel p-3';
-    div.style.background = 'var(--panel-2)';
-    div.innerHTML = `<div class="text-xs" style="color:var(--muted)">${i.l}</div><div class="text-lg font-semibold">${i.v}</div><div class="text-xs" style="color:var(--muted)">${i.s}</div>`;
-    nhCards.appendChild(div);
+        <div class="text-right shrink-0">
+          <span class="tag" style="background:${impactColor(e.impact)};color:white;">${e.impact.toUpperCase()}</span>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2 mt-2 text-xs" style="color:var(--mute);">
+        <span class="tag" style="background:${regionColor(e.region)};color:white;">${e.region}</span>
+        <span class="tag" style="background:#3a3a3a;">${e.category}</span>
+        <span>${e.published_at.slice(0,10)}</span>
+        <a href="${e.source.url}" target="_blank" style="color:var(--blue);">${e.source.name}（${e.source.source_tier}）</a>
+      </div>
+    `;
+    tl.appendChild(div);
   });
-  document.getElementById('miner-narr').innerHTML = `<span class="chip chip-good">${t.miner_economics.miner_outflow_signal}</span><div class="mt-2">${t.miner_economics.narrative}</div>`;
-  const ln = t.layer2.lightning;
-  document.getElementById('ln-info').innerHTML = `
-    容量 ${fmt(ln.capacity_btc)} BTC ($${fmt(ln.capacity_usd_m)}M) · 節點 ${fmt(ln.node_count)} · 通道 ${fmt(ln.channel_count)} · 3d ${pct(ln.capacity_change_3d_pct)}
-    <div class="mt-2">${(t.layer2.notable_events[0] || {}).summary || ''}</div>`;
-  const proto = document.getElementById('proto-list');
-  t.protocol_updates.forEach(p => {
-    const div = document.createElement('div');
-    div.className = 'panel p-3 text-xs';
-    div.style.background = 'var(--panel-2)';
-    div.innerHTML = `<div class="font-semibold">${p.title}</div><div style="color:var(--muted)">${p.summary}</div><a href="${p.url}" target="_blank" rel="noopener" class="text-xs" style="color:var(--blue)">${p.url}</a>`;
-    proto.appendChild(div);
-  });
-  document.getElementById('inscription-info').textContent = t.inscription_activity.trend_note;
-
-  // ===== FOOTER =====
-  const allSrc = [...(m.sources || []), ...(t.sources || [])];
-  const ul = document.getElementById('src-api');
-  allSrc.slice(0, 8).forEach(s => {
-    const li = document.createElement('li');
-    li.innerHTML = `<a href="${s.url}" target="_blank" rel="noopener" style="color:var(--blue)">${s.name}</a>${s.type ? ' · ' + s.type : ''}`;
-    ul.appendChild(li);
-  });
-  const dq = document.getElementById('dq-summary');
-  const summary = [
-    `Agent 1: API ${m.data_quality.calls_total - m.data_quality.calls_failed}/${m.data_quality.calls_total} OK · fetch ${m.data_quality.fetch_total - m.data_quality.fetch_failed}/${m.data_quality.fetch_total}`,
-    `Agent 2: ${D.news.summary_stats.total} 事件 (h:${D.news.summary_stats.by_impact.high} m:${D.news.summary_stats.by_impact.medium} l:${D.news.summary_stats.by_impact.low})`,
-    `Agent 3: hashrate ${nh.hashrate_eh} EH/s · LN ${ln.capacity_btc} BTC`,
-    `Agent 4: model ${pr.model_used} · conf ${pr.confidence}`
-  ];
-  summary.forEach(s => { const li = document.createElement('li'); li.textContent = s; dq.appendChild(li); });
-  document.getElementById('footer-time').textContent = D.as_of;
-
-  // DQ modal detail
-  const dqd = document.getElementById('dq-detail');
-  const blocks = [
-    {t: 'Agent 1（市場）', q: m.data_quality},
-    {t: 'Agent 2（新聞）', q: D.news.data_quality},
-    {t: 'Agent 3（鏈上）', q: t.data_quality},
-    {t: 'Agent 4（預測）', q: pr.data_quality}
-  ];
-  blocks.forEach(b => {
-    const div = document.createElement('div');
-    div.className = 'panel p-3';
-    div.style.background = 'var(--panel-2)';
-    div.innerHTML = `<div class="font-semibold mb-1">${b.t}</div><pre class="text-xs">${JSON.stringify(b.q, null, 2)}</pre>`;
-    dqd.appendChild(div);
-  });
-})();
+}
+renderNews(allNews);
+function filterNews(im) { renderNews(im==='all' ? allNews : allNews.filter(e=>e.impact===im)); }
+function filterRegion(r) { renderNews(allNews.filter(e=>e.region===r)); }
+function filterCategory(c) { renderNews(allNews.filter(e=>e.category===c)); }
+function filterReset() { renderNews(allNews); }
 </script>
 </body>
 </html>

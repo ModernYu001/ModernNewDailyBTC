@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<title>BTC Daily Dashboard · 2026-05-02</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:#0a0a0a; --panel:#141414; --panel2:#1c1c1c; --line:#2a2a2a;
+    --txt:#e5e5e5; --muted:#9ca3af; --orange:#f7931a; --green:#22c55e;
+    --red:#ef4444; --purple:#a855f7; --yellow:#f59e0b;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family: "Microsoft JhengHei","PingFang SC","Source Han Sans","Hiragino Sans GB",-apple-system,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--txt); padding:24px; line-height:1.55; }
+  h2 { color:var(--orange); margin-bottom:12px; font-size:1.15rem; letter-spacing:1px; }
+  h3 { color:var(--txt); margin-bottom:8px; font-size:1rem; }
+  a { color:var(--orange); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  .grid { display:grid; gap:16px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px; }
+  .panel-sub { background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; }
+
+  /* Header summary */
+  .hero { display:grid; grid-template-columns: 1fr 1fr; gap:20px; align-items:center; }
+  .hero-price { font-size:2.6rem; font-weight:800; color:var(--orange); }
+  .hero-change { font-size:1.15rem; margin-top:4px; }
+  .hero-meta { color:var(--muted); font-size:0.85rem; margin-top:8px; }
+  .hero-headline { font-size:1.6rem; font-weight:700; color:#fff; line-height:1.4; }
+  .hero-regime { display:inline-block; margin-top:12px; padding:4px 12px; border-radius:6px;
+    background:var(--purple)33; color:var(--purple); font-weight:600; }
+  .hero-regime-reason { color:var(--muted); margin-top:8px; font-size:0.92rem; }
+
+  /* Insight cards */
+  .insights { display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:12px; margin-top:12px; }
+  .insight-card { background:var(--panel2); border-left:4px solid; border-radius:6px; padding:12px; }
+  .insight-text { font-size:0.95rem; }
+  .insight-meta { margin-top:8px; }
+  .conf-pill, .support-pill, .impact-pill, .cat-pill, .region-pill, .time-pill, .signal-pill {
+    display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.75rem; margin-right:6px; color:#fff;
+  }
+  .support-pill { background:#374151; color:#d1d5db; }
+  .insight-data { color:var(--muted); font-size:0.78rem; margin-top:6px; font-family:monospace; }
+
+  /* Lights */
+  .lights { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-top:12px; }
+  .light { text-align:center; background:var(--panel2); border-radius:6px; padding:12px; }
+  .light-dot { width:14px; height:14px; border-radius:50%; margin:0 auto 6px; }
+  .light-label { font-size:0.85rem; color:var(--muted); }
+  .light-status { font-weight:700; font-size:1rem; margin:4px 0; }
+  .light-detail { font-size:0.7rem; color:var(--muted); }
+
+  /* Watch list */
+  .watch-list { background:var(--panel2); border-radius:6px; padding:12px 12px 12px 32px; margin-top:12px; }
+  .watch-list li { font-size:0.9rem; margin-bottom:4px; }
+
+  /* Two col layout */
+  .two-col { display:grid; grid-template-columns: 1.4fr 1fr; gap:16px; }
+  .three-col { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; }
+  .four-col { display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:12px; }
+
+  /* Stat */
+  .stat { background:var(--panel2); border-radius:6px; padding:10px 12px; }
+  .stat-label { font-size:0.75rem; color:var(--muted); }
+  .stat-value { font-size:1.25rem; font-weight:700; margin-top:2px; }
+  .stat-sub { font-size:0.78rem; color:var(--muted); margin-top:2px; }
+  .green { color:var(--green); }
+  .red { color:var(--red); }
+  .orange { color:var(--orange); }
+  .purple { color:var(--purple); }
+
+  /* Forecast section */
+  .fc-section { border:1px solid var(--purple); background: linear-gradient(180deg, #1a0d2e 0%, var(--panel) 60%); }
+  .fc-status-bar { display:flex; gap:14px; flex-wrap:wrap; padding:8px 12px; background:#2d1b4d; border-radius:6px; margin-bottom:12px; }
+  .fc-status-item { font-size:0.85rem; }
+  .fc-status-item b { color:var(--purple); }
+  .fc-cards { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; }
+  .fc-card { background:var(--panel2); border:1px solid var(--purple)44; border-radius:8px; padding:14px; }
+  .fc-horizon { font-size:1.2rem; color:var(--purple); font-weight:800; }
+  .fc-range { font-size:1.1rem; font-weight:700; margin:8px 0; color:#fff; }
+  .fc-prob-row { display:flex; justify-content:space-between; font-size:0.85rem; }
+  .fc-prob-bar { height:8px; border-radius:4px; background:#333; margin:6px 0; overflow:hidden; }
+  .fc-prob-fill { height:100%; }
+  .fc-trigger { font-size:0.82rem; line-height:1.7; color:var(--muted); }
+  .fc-trigger b { color:#fff; }
+  .fc-reason { font-size:0.8rem; color:var(--muted); margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); }
+
+  /* News */
+  .news-list { display:flex; flex-direction:column; gap:10px; max-height:600px; overflow-y:auto; padding-right:6px; }
+  .news-card { background:var(--panel2); border-radius:8px; padding:14px; border-left:3px solid var(--line); }
+  .news-meta { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; }
+  .cat-pill { background:#1f2937; color:#9ca3af; }
+  .region-pill { background:#374151; color:#d1d5db; }
+  .time-pill { background:#0a0a0a; color:#6b7280; border:1px solid var(--line); }
+  .news-title { font-weight:700; font-size:1.02rem; margin-bottom:6px; }
+  .news-summary { font-size:0.88rem; color:#cbd5e1; }
+  .news-footer { display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:0.78rem; }
+  .news-related { color:var(--muted); }
+  .news-secondary { font-size:0.75rem; color:var(--muted); margin-top:4px; }
+  .filter-row { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+  .filter-btn { background:var(--panel2); border:1px solid var(--line); color:#fff; padding:4px 10px; border-radius:4px;
+    cursor:pointer; font-size:0.78rem; }
+  .filter-btn.active { background:var(--orange); color:#000; border-color:var(--orange); }
+
+  /* Sources / footer */
+  .sources { font-size:0.78rem; color:var(--muted); }
+  .sources li { margin-left:18px; }
+  .footer-grid { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; }
+
+  /* warning */
+  .warn-bar { background:var(--orange)22; border:1px solid var(--orange); color:var(--orange);
+    padding:8px 12px; border-radius:6px; font-size:0.82rem; margin-bottom:12px; }
+  .alert-bar { background:var(--red)22; border:1px solid var(--red); color:var(--red);
+    padding:8px 12px; border-radius:6px; font-size:0.82rem; margin-bottom:12px; }
+
+  /* Collapsible */
+  details { margin-top:8px; }
+  details summary { cursor:pointer; color:var(--orange); font-size:0.85rem; padding:6px 0; user-select:none; }
+  details[open] summary { color:#fff; }
+  pre { background:var(--panel2); padding:10px; border-radius:6px; font-size:0.72rem; overflow-x:auto; max-height:300px; }
+
+  /* Responsive */
+  @media (max-width:1280px) {
+    .two-col, .three-col, .four-col, .fc-cards { grid-template-columns: 1fr 1fr; }
+    .hero { grid-template-columns: 1fr; }
+  }
+  @media (max-width:480px) {
+    body { padding:12px; }
+    .two-col, .three-col, .four-col, .fc-cards, .footer-grid { grid-template-columns: 1fr; }
+    .hero-price { font-size:2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="panel hero">
+  <div>
+    <div class="hero-price">$78,403.82</div>
+    <div class="hero-change green">+2.43% (24h)　<span class="orange">+1.86% (3d)</span></div>
+    <div class="hero-meta">指數價來自 Crypto.com BTCUSD-INDEX · 現貨 last $78,430.61 · 永續 mark $78,397.30</div>
+    <div class="hero-meta">資料窗 2026-04-29T02:56:35Z → 2026-05-02T02:56:35Z</div>
+  </div>
+  <div>
+    <div class="hero-headline">BTC 78K 區間整理 ETF 與礦工難度分歧</div>
+    <div><span class="hero-regime">Regime: consolidating</span></div>
+    <div class="hero-regime-reason">現貨 +2.43% 但 1h 量能僅 0.28 倍均量、簿深度買強卻主動賣方略佔上風;ETF 月度資金強但月末 3 日連流出;算力回升但難度下調反映前期挫折。多空訊號交織,屬經典震盪整理結構。</div>
+  </div>
+</section>
+
+<!-- INTEGRATION -->
+<section class="panel" style="margin-top:16px;">
+  <h2>整合洞察 · INTEGRATED INSIGHTS</h2>
+  <div class="insights">
+    <div class="insight-card" style="border-left-color:#22c55e;">
+      <div class="insight-text">ETF 月度 +$2.44B 為 4 月反彈主因,但月底連流出顯示資金動能正在弱化</div>
+      <div class="insight-meta">
+        <span class="conf-pill" style="background:#22c55e;">high</span>
+        <span class="support-pill">market、news</span>
+      </div>
+      <div class="insight-data">agent1.etf_flows.captured_total=-$486M (4d), monthly_context=+$2.44B; agent2.events[n2]</div>
+    </div>
+    <div class="insight-card" style="border-left-color:#f59e0b;">
+      <div class="insight-text">短線盤面信號混合 — 簿深度顯買盤支撐 (2.28x),但主動成交仍偏賣 (0.75x),屬底部承接而非主動買盤</div>
+      <div class="insight-meta">
+        <span class="conf-pill" style="background:#f59e0b;">medium</span>
+        <span class="support-pill">market</span>
+      </div>
+      <div class="insight-data">depth_ratio=2.28 buy_support; taker_ratio=0.75 seller_aggressive</div>
+    </div>
+    <div class="insight-card" style="border-left-color:#f59e0b;">
+      <div class="insight-text">5/2 難度下調 -3.07% 緩解礦工現金流,但 Q1 上市礦工已賣出 32,000+ BTC,礦工仍偏分發</div>
+      <div class="insight-meta">
+        <span class="conf-pill" style="background:#f59e0b;">medium</span>
+        <span class="support-pill">tech</span>
+      </div>
+      <div class="insight-data">agent3.network_health.next_difficulty_change=-3.07%; miner_outflow_signal=distributing</div>
+    </div>
+    <div class="insight-card" style="border-left-color:#22c55e;">
+      <div class="insight-text">4 月為加密歷史上駭客最多月份 (~$651M),系統性風險偏好已被壓縮</div>
+      <div class="insight-meta">
+        <span class="conf-pill" style="background:#22c55e;">high</span>
+        <span class="support-pill">news</span>
+      </div>
+      <div class="insight-data">agent2.events[n1]</div>
+    </div>
+    <div class="insight-card" style="border-left-color:#f59e0b;">
+      <div class="insight-text">預測模型方向 (up) 與市場主動賣 (seller_aggressive) 存在輕微衝突,但 basis 中性、結構偏多支撐預測有效性</div>
+      <div class="insight-meta">
+        <span class="conf-pill" style="background:#f59e0b;">medium</span>
+        <span class="support-pill">predictor、market</span>
+      </div>
+      <div class="insight-data">agent4.preferred_direction=up; agent1.taker.signal=seller_aggressive; basis=neutral</div>
+    </div></div>
+
+  <h3 style="margin-top:18px;">訊號對齊 · Signal Alignment</h3>
+  <div class="lights"><div class="light"><div class="light-dot" style="background:#22c55e;"></div><div class="light-label">現貨/永續</div><div class="light-status" style="color:#22c55e;">同步</div><div class="light-detail">aligned (現貨 +2.43% / 永續 +2.45%,基差中性)</div></div><div class="light"><div class="light-dot" style="background:#f59e0b;"></div><div class="light-label">Taker/Basis/Depth</div><div class="light-status" style="color:#f59e0b;">混合</div><div class="light-detail">mixed (taker 0.75 偏賣 / basis 中性 / depth 2.28 偏買)</div></div><div class="light"><div class="light-dot" style="background:#a3a3a3;"></div><div class="light-label">ETF/鏈上</div><div class="light-status" style="color:#a3a3a3;">中性</div><div class="light-detail">neutral (ETF 月入但月末轉弱;礦工仍偏分發)</div></div><div class="light"><div class="light-dot" style="background:#22c55e;"></div><div class="light-label">敘事/價格</div><div class="light-status" style="color:#22c55e;">同步</div><div class="light-detail">aligned (新聞利多與利空抵消,價格反映 mid-range)</div></div><div class="light"><div class="light-dot" style="background:#84cc16;"></div><div class="light-label">現價 vs 預測</div><div class="light-status" style="color:#84cc16;">弱同步</div><div class="light-detail">weak_confirm (現價 $78,403 落在 1h 區間 $78,021–$78,785 中軌偏上)</div></div></div>
+
+  <h3 style="margin-top:18px;">預測對齊 · Prediction Alignment</h3>
+  <div class="panel-sub">
+    <div><b>Agent 4 方向:</b> <span class="purple">up</span>　
+         <b>Agent 1 情緒:</b> mixed (basis neutral, depth buy_support, taker seller_aggressive)</div>
+    <div style="margin-top:6px;"><b>對齊狀態:</b> <span class="orange">weak_confirm</span></div>
+    <div style="margin-top:4px; font-size:0.9rem; color:var(--muted);">Agent 4 方向受結構性偏多 (close>SMA50) 推動,但 Agent 1 主動成交流偏賣方,顯示反彈缺乏主動買盤跟進;1h 區間覆蓋三日關鍵位 $78,940 — 若放量上破則可確認延續,反之回測 $77,943 短倉觸發。</div>
+  </div>
+
+  <h3 style="margin-top:18px;">觀察清單 · Watch List</h3>
+  <ul class="watch-list"><li>5/2 04:00 UTC 難度調整實際變化 vs 預估 -3.07%</li><li>5/3 起 IBIT 是否再現 1 日以上連續流入,確認 4/30 +$14.76M 為轉折</li><li>1h 區間 $78,940 突破 + 量比回升 >1.3 → 4h 多頭目標 $79,170</li><li>$77,000 跌破 + 量能放大 → 4h 區間可能下移至 $76,500</li><li>5/5 MSTR Q1 財報:任何加碼或停止購買皆為市場風向</li><li>5/15 Powell 卸任前後波動性</li></ul>
+</section>
+
+<!-- MARKET (Agent 1) -->
+<section class="panel" style="margin-top:16px;">
+  <h2>市場結構 · MARKET STRUCTURE (Agent 1)</h2>
+  <div class="two-col">
+    <div class="panel-sub">
+      <h3>4h K 線 · 3 日窗口 (虛線 = 未收盤)</h3>
+      <div style="height:340px;"><canvas id="klineChart"></canvas></div>
+      <div style="font-size:0.78rem; color:var(--muted); margin-top:6px;">3 日高點 $78,940.56 (5/1 12:00)　|　3 日低點 $74,929.70 (4/29 16:00)　|　3 日成交 12,492 BTC ≈ $959.30M</div>
+    </div>
+    <div>
+      <div class="three-col">
+        <div class="stat">
+          <div class="stat-label">基差 (Mark - Index)</div>
+          <div class="stat-value">-0.0083%</div>
+          <div class="stat-sub"><span class="signal-pill" style="background:#a3a3a322;color:#a3a3a3;border:1px solid #a3a3a366;">neutral</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">買賣深度比 (depth_ratio)</div>
+          <div class="stat-value">2.28x</div>
+          <div class="stat-sub"><span class="signal-pill" style="background:#22c55e22;color:#22c55e;border:1px solid #22c55e66;">buy_support</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">主動成交比 (taker)</div>
+          <div class="stat-value">0.75x</div>
+          <div class="stat-sub"><span class="signal-pill" style="background:#ef444422;color:#ef4444;border:1px solid #ef444466;">seller_aggressive</span></div>
+        </div>
+      </div>
+
+      <div class="panel-sub" style="margin-top:12px;">
+        <h3>大單流向 (Large Trades)</h3>
+        <div style="font-size:0.85rem;">閾值 $10,000 (自適應 是) · 買 0 筆 / 賣 2 筆</div>
+        <div style="font-size:0.85rem; margin-top:4px;">買額 $0 · 賣額 $21,959 · <span class="signal-pill" style="background:#6b728022;color:#6b7280;border:1px solid #6b728066;">venue_too_thin</span></div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:6px;">閾值自適應降至 $10k 仍僅 2 筆,標記為 venue_too_thin;Crypto.com 在 BTC_USDT 上的單筆規模本就偏小,大單訊號無法成立。建議以主動成交比 (0.75) 解讀,顯示樣本期間賣方主動性略強。</div>
+      </div>
+
+      <div class="panel-sub" style="margin-top:12px;">
+        <h3>ETF 流向 (近 5 日)</h3>
+        <div style="height:160px;"><canvas id="etfChart"></canvas></div>
+        <div style="font-size:0.8rem; margin-top:6px;">5 日累計 <b class="red">$-486.34M</b> · <span class="signal-pill" style="background:#6b728022;color:#6b7280;border:1px solid #6b728066;">verified_with_minor_diff</span></div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:4px;">短線 4 日轉弱 — 前 3 日連續流出累計 -$501M,4/30 才以 +$14.76M 微幅止血</div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:2px;">4 月全月仍錄得 +$2.44B 淨流入,為 2025/10 以來最強月份;惟月底連續流出顯示動能轉弱,IBIT 累計持倉約 81 萬 BTC ≈ $62B</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="four-col" style="margin-top:14px;">
+    <div class="stat"><div class="stat-label">24h 高/低</div><div class="stat-value">$78,940.56 / $76,538.70</div></div>
+    <div class="stat"><div class="stat-label">永續 OI</div><div class="stat-value">6,217 BTC</div><div class="stat-sub">≈ $487.36M</div></div>
+    <div class="stat"><div class="stat-label">ETH</div><div class="stat-value green">$2,304.71</div><div class="stat-sub">+1.71%</div></div>
+    <div class="stat"><div class="stat-label">SOL</div><div class="stat-value green">$84.01</div><div class="stat-sub">+0.48%</div></div>
+  </div>
+
+  <div class="panel-sub" style="margin-top:12px;">
+    <h3>跨資產相關性 (30 日)</h3>
+    <div style="font-size:0.9rem;">
+      vs DXY: <b>-0.8</b> (inverse) ·
+      vs SPX: <b>—</b> · vs Gold: <b>—</b>
+    </div>
+    <div style="font-size:0.82rem; color:var(--muted); margin-top:4px;">BTC 與美元指數維持顯著反向相關 (-0.8),DXY 短期動向仍為宏觀層面最關鍵的方向指標;3 月 JPMorgan 曾指出兩者一度短暫翻轉為正向,但 4 月底已回到傳統反向結構。</div>
+    <div style="font-size:0.78rem; margin-top:4px;"><span class="signal-pill" style="background:#6b728022;color:#6b7280;border:1px solid #6b728066;">single_source_unverified</span></div>
+  </div>
+
+  <div style="margin-top:12px; font-size:0.85rem; color:#cbd5e1;">比特幣現價約 $78,431,過去 24 小時上漲 2.43%,自 5/1 凌晨 $76,539 低點反彈 $1,890,觸及 $78,940 三日高點後回落至 $78,400 一帶整理。三日窗口低點為 4/29 中段的 $74,930,顯示自月底以來市場已完成低位築底並轉為震盪上行;然而現價距離三日高點僅 0.7%,短線動能略顯疲乏,$80,000 心理整數關卡仍是上方明確壓力。</div>
+</section>
+
+<!-- PREDICTION (Agent 4) -->
+<section class="panel fc-section" style="margin-top:16px;">
+  <h2 style="color:var(--purple);">短週期預測 · SHORT-TERM FORECAST (Agent 4)</h2>
+  <div class="fc-status-bar">
+    <div class="fc-status-item">模型 <b>claude-opus-4-7-direct (in-process; sonnet API blocked by sandbox)</b></div>
+    <div class="fc-status-item">方向 <b>up</b></div>
+    <div class="fc-status-item">信心 <b>medium</b></div>
+    <div class="fc-status-item">回測命中率 <b>n/a (history.jsonl 首次寫入)</b></div>
+    <div class="fc-status-item">當前價 <b>$78,403.28</b></div>
+  </div>
+  <div class='warn-bar'>⚠ Binance 直連被網路白名單阻擋,本日 Agent 4 改以 Crypto.com 同等 K 線 (50 根) 替代 120 根規格,動能訊號可信度略低</div>
+  <div class="fc-cards">
+    
+    <div class="fc-card">
+      <div class="fc-head"><span class="fc-horizon">1h</span></div>
+      <div class="fc-range">$78,021.17 – $78,785.39</div>
+      <div class="fc-prob-row">
+        <span class="fc-prob-label">上行概率</span>
+        <span class="fc-prob-val">55%</span>
+      </div>
+      <div class="fc-prob-bar"><div class="fc-prob-fill" style="width:55.00000000000001%;background:#22c55e;"></div></div>
+      <div class="fc-trigger">
+        <div>📈 多 &gt; <b>$78,864.18</b></div>
+        <div>📉 空 &lt; <b>$77,943.15</b></div>
+      </div>
+      <div class="fc-reason">15m 結構偏多 + 1h RSI 62 中性偏強;1h MACD hist 連 7 根紅柱顯示動能短線退潮,故概率僅微高於中性。</div>
+    </div>
+    
+    <div class="fc-card">
+      <div class="fc-head"><span class="fc-horizon">4h</span></div>
+      <div class="fc-range">$77,715.48 – $79,091.08</div>
+      <div class="fc-prob-row">
+        <span class="fc-prob-label">上行概率</span>
+        <span class="fc-prob-val">55%</span>
+      </div>
+      <div class="fc-prob-bar"><div class="fc-prob-fill" style="width:55.00000000000001%;background:#22c55e;"></div></div>
+      <div class="fc-trigger">
+        <div>📈 多 &gt; <b>$79,170.17</b></div>
+        <div>📉 空 &lt; <b>$77,637.77</b></div>
+      </div>
+      <div class="fc-reason">區間寬度約 1,376 USD,涵蓋 $78,940 三日高點;4h 上行需 1h 量能由 0.28 倍均量 (contraction) 重新放大確認。</div>
+    </div>
+    
+    <div class="fc-card">
+      <div class="fc-head"><span class="fc-horizon">1d</span></div>
+      <div class="fc-range">$77,065.90 – $79,740.66</div>
+      <div class="fc-prob-row">
+        <span class="fc-prob-label">上行概率</span>
+        <span class="fc-prob-val">55%</span>
+      </div>
+      <div class="fc-prob-bar"><div class="fc-prob-fill" style="width:55.00000000000001%;background:#22c55e;"></div></div>
+      <div class="fc-trigger">
+        <div>📈 多 &gt; <b>$79,820.41</b></div>
+        <div>📉 空 &lt; <b>$76,988.83</b></div>
+      </div>
+      <div class="fc-reason">日級別仍受 $80,000 心理整數與 200DMA $82,228 雙重壓制;但 ETF 月度 +$2.44B 與難度下調 -3.07% 構成基本面緩衝,下行不易跌破 $77,000 支撐。</div>
+    </div>
+  </div>
+
+  <details style="margin-top:14px;">
+    <summary>展開 7 段完整推理</summary>
+    <pre>## 段 1:市場總覽
+推理:現價 $78,403,自 5/1 凌晨 $76,539 反彈 1,864 USD,24 小時 +2.43%;指數價、現貨與永續高度收斂,基差僅 -0.008%,表示衍生品端無顯著槓桿失衡。15m 與 1h 結構性偏多 (close > SMA50),但 1h 量能比僅 0.28,顯示反彈進入縮量整理。
+結論:市場處於「ETF 資金面 + 難度下調」雙利好支撐的拉鋸期,短線 $78,940 三日高點為關鍵壓力,$77,000 為下方第一支撐。
+
+## 段 2:15m 分析
+推理:RSI 14 = 57.5 中性偏強;MACD hist = 20.12,連 17 根綠柱顯示短線動能延續;布林帶 (78073 / 78279 / 78485) 帶寬 0.53% 偏窄,ATR14 僅 140.95 USD,顯示波動極度壓縮。
+結論:短線動能尚在,但壓縮波動隨時可能擴張;若價格放量站穩 78485 中軌上沿,有機會開啟 1h 級別突破。
+
+## 段 3:1h 分析
+推理:RSI 14 = 62.3 偏多;MACD line 401 / signal 449 / hist -48,連 7 根紅柱代表更高 timeframe 動能正在減弱,屬偏多回檔;布林帶 (77102 / 78058 / 79014) 帶寬 2.45%,中軌與現價交叉,中軌上方 1,000 USD 仍是合理擴張空間。
+結論:1h 大方向仍偏多,但動能高點已過,需短線量能回升 (>0.7 倍均量) 才可確認反彈第二段。
+
+## 段 4:1h 預測
+推理:1h ATR×1.0 = 382 USD,以 78,403 為中心 → $78,021 – $78,785;1h 結構偏多 +0.10、RSI 中性、MACD hist 連 -7 根 (-0.05)、無突破 → 概率 0.50+0.10-0.05 = 0.55,未觸頂限。
+結論:1h 區間 $78,021 – $78,785,上行概率 0.55;trigger_long_above = $78,864.18;trigger_short_below = $77,943.15。
+
+## 段 5:4h 預測
+推理:1h ATR×1.8 = 688 USD,中心 78,403 → $77,715 – $79,091;區間覆蓋三日高 $78,940;若 1h 收盤上破 $79,014 (上軌) 配合量比 >1.3,可視為突破成立。
+結論:4h 區間 $77,715 – $79,091,上行概率 0.55;trigger_long_above = $79,170;trigger_short_below = $77,638。
+
+## 段 6:1d 預測
+推理:1h ATR×3.5 = 1,337 USD,中心 78,403 → $77,066 – $79,741;日級別需越過 $80,000 心理整數方視為「真突破」,200DMA $82,228 為更上層壓力。下方支撐密集 $77,000 / $76,500 / $75,000。
+結論:1d 區間 $77,066 – $79,741,上行概率 0.55;trigger_long_above = $79,820;trigger_short_below = $76,989。
+
+## 段 7:風險提示
+1) 4 月底 ETF 連續流出已使月底資金面動能轉弱,5 月若 IBIT 出現連 3 日流出,需重估短線多頭結構;
+2) 5/15 Powell 卸任 + 5/5 MSTR 財報為近期重大事件風險;
+3) Binance / mempool / Lightning 等資料因網路白名單失敗,本次 Agent 4 改用 Crypto.com 50 根 K 線替代 120 根,動能訊號可信度略低;
+4) 4 月為加密歷史上駭客最多月份 ($651M),5 月若再爆發大型事件可能短線觸發風險偏好崩塌。
+
+(非投資建議)
+</pre>
+  </details>
+  <details>
+    <summary>查看技術指標摘要 (15m / 1h)</summary>
+    <pre>{
+  "15m": {
+    "rsi_14": 57.5,
+    "macd": {
+      "line": 21.88,
+      "signal": 1.76,
+      "hist": 20.12
+    },
+    "macd_hist_consecutive_bars": 17,
+    "bollinger": {
+      "upper": 78485.14,
+      "middle": 78279.16,
+      "lower": 78073.18
+    },
+    "bb_width_pct": 0.526,
+    "atr_14": 140.95,
+    "volume_ma_20": 15.274,
+    "volume_ratio_now": 1.109,
+    "range_120_high": 78755.68,
+    "range_120_low": 77743.58,
+    "last_5_up_volume": 26.306,
+    "last_5_down_volume": 32.741,
+    "breakout_volume_confirm": "none",
+    "structural_bias": "bullish"
+  },
+  "1h": {
+    "rsi_14": 62.26,
+    "macd": {
+      "line": 401.38,
+      "signal": 449.41,
+      "hist": -48.02
+    },
+    "macd_hist_consecutive_bars": -7,
+    "bollinger": {
+      "upper": 79013.56,
+      "middle": 78057.95,
+      "lower": 77102.33
+    },
+    "bb_width_pct": 2.448,
+    "atr_14": 382.11,
+    "volume_ma_20": 168.003,
+    "volume_ratio_now": 0.281,
+    "range_120_high": 78940.56,
+    "range_120_low": 75312.54,
+    "last_5_up_volume": 177.75,
+    "last_5_down_volume": 127.726,
+    "breakout_volume_confirm": "none",
+    "structural_bias": "bullish"
+  }
+}</pre>
+  </details>
+</section>
+
+<!-- NEWS (Agent 2) -->
+<section class="panel" style="margin-top:16px;">
+  <h2>新聞與政策 · NEWS &amp; POLICY (Agent 2)</h2>
+  <div style="font-size:0.85rem; color:var(--muted); margin-bottom:6px;">
+    共 8 則 · 高影響 4 · 中 3 · 低 1
+  </div>
+  <div class="filter-row" id="newsFilters">
+    <button class="filter-btn active" data-filter="all">全部</button>
+    <button class="filter-btn" data-filter="impact-high">僅高影響</button>
+    <button class="filter-btn" data-filter="region-US">美國</button>
+    <button class="filter-btn" data-filter="region-Global">全球</button>
+    <button class="filter-btn" data-filter="region-Other">其他地區</button>
+    <button class="filter-btn" data-filter="cat-regulation">監管</button>
+    <button class="filter-btn" data-filter="cat-adoption">採用/資金</button>
+    <button class="filter-btn" data-filter="cat-macro">宏觀</button>
+    <button class="filter-btn" data-filter="cat-corporate">企業</button>
+    <button class="filter-btn" data-filter="cat-security">安全</button>
+  </div>
+  <div class="news-list">
+    <div class="news-card" data-impact="high" data-region="Global" data-category="security">
+      <div class="news-meta">
+        <span class="impact-pill" style="background:#ef4444;">HIGH</span>
+        <span class="cat-pill">security</span>
+        <span class="region-pill">Global</span>
+        <span class="time-pill">2026-04-30 18:00:00 UTC</span>
+      </div>
+      <div class="news-title">4 月成為加密幣有史以來駭客事件最多的月份,約 30 起、損失 $651M</div>
+      <div class="news-summary">區塊鏈安全公司 CertiK 統計 4 月共 30 起重大事件,合計約 $651M 損失;主要包括 KelpDAO ($291M)、Drift Protocol ($285M)、Rhea Finance ($18M) 與 Grinex ($16.2M),多數攻擊被歸因於朝鮮駭客集團。4/30 另發現針對閒置 Ethereum 錢包的活躍漏洞被一個攻擊者地址持續清空。</div>
+      <div class="news-footer">
+        <a href="https://news.bitcoin.com/defillama-confirms-april-2026-as-cryptos-most-hacked-month-with-30-incidents/" target="_blank" rel="noopener">news.bitcoin.com (crypto_native)</a>
+        <span class="news-related">關聯: BTC、ETH</span>
+      </div>
+      <div class="news-secondary">次級源: cryptobriefing.com、u.today、bitcoinethereumnews.com</div>
+    </div>
+    
+    <div class="news-card" data-impact="high" data-region="US" data-category="adoption">
+      <div class="news-meta">
+        <span class="impact-pill" style="background:#ef4444;">HIGH</span>
+        <span class="cat-pill">adoption</span>
+        <span class="region-pill">US</span>
+        <span class="time-pill">2026-04-30 22:00:00 UTC</span>
+      </div>
+      <div class="news-title">BTC 現貨 ETF 4 月收官 +$2.44B 月淨流入,IBIT 結束 9 日連流入</div>
+      <div class="news-summary">4 月美國現貨 BTC ETF 月內累計淨流入 $2.44B,為 2025/10 以來最強;但月底 4/29 IBIT 錄得 -$89M 為其單日最大流出,結束 9 日連續流入。4/30 整體 ETF 微幅止血 +$14.76M。BlackRock IBIT 持倉約 81 萬 BTC ≈ $62B,佔市佔約 60%。</div>
+      <div class="news-footer">
+        <a href="https://www.investing.com/analysis/bitcoin-etf-inflows-hit-244bn-in-april-as-institutional-demand-returns-200679435" target="_blank" rel="noopener">investing.com (mainstream)</a>
+        <span class="news-related">關聯: BTC、IBIT、FBTC</span>
+      </div>
+      <div class="news-secondary">次級源: theblock.co/data/etfs/bitcoin-etf、coinglass.com/etf/bitcoin、farside.co.uk/btc</div>
+    </div>
+    
+    <div class="news-card" data-impact="high" data-region="US" data-category="regulation">
+      <div class="news-meta">
+        <span class="impact-pill" style="background:#ef4444;">HIGH</span>
+        <span class="cat-pill">regulation</span>
+        <span class="region-pill">US</span>
+        <span class="time-pill">2026-04-29 15:00:00 UTC</span>
+      </div>
+      <div class="news-title">美國 SEC 排定 4/16 圓桌會議審視 CLARITY Act 框架</div>
+      <div class="news-summary">美國證交會就 CLARITY Act 排定 4/16 圓桌,該法案旨在劃分 SEC 與 CFTC 對加密資產的管轄並設定明確操作框架;市場視為機構參與不確定性消除的長線利多。</div>
+      <div class="news-footer">
+        <a href="https://www.theblock.co/post/383361/crypto-etfs-2026-regulatory-tailwinds-issuers-brace-crowded-year" target="_blank" rel="noopener">theblock.co (crypto_native)</a>
+        <span class="news-related">關聯: BTC</span>
+      </div>
+      <div class="news-secondary">次級源: coinmarketcap.com cmc-ai</div>
+    </div>
+    
+    <div class="news-card" data-impact="medium" data-region="US" data-category="adoption">
+      <div class="news-meta">
+        <span class="impact-pill" style="background:#f59e0b;">MEDIUM</span>
+        <span class="cat-pill">adoption</span>
+        <span class="region-pill">US</span>
+        <span class="time-pill">2026-04-30 03:00:00 UTC</span>
+      </div>
+      <div class="news-title">Eric Trump 於 Bitcoin 2026 大會喊話 BTC 上看 $1M,參議員齊聲造勢</div>
+      <div class="news-summary">在拉斯維加斯 Bitcoin 2026 大會上,Eric Trump、Michael Saylor 與多位美國參議員齊聲為散戶造勢,白宮加密顧問則暗示「戰略比特幣儲備」即將取得突破。然而會後 BTC 表現平淡,並未出現預期反應。</div>
+      <div class="news-footer">
+        <a href="https://themarketperiodical.com/2026/04/30/bitcoin-price-going-to-1m-eric-trump-says-at-bitcoin-2026-conference/" target="_blank" rel="noopener">themarketperiodical.com (crypto_native)</a>
+        <span class="news-related">關聯: BTC</span>
+      </div>
+      <div class="news-secondary">次級源: securitiesdocket.com、bloomberg via securitiesdocket</div>
+    </div>
+    
+    <div class="news-card" data-impact="high" data-region="US" data-category="macro">
+      <div class="news-meta">
+        <span class="impact-pill" style="background:#ef4444;">HIGH</span>
+        <span class="cat-pill">macro</span>
+        <span class="region-pill">US</span>
+        <span class="time-pill">2026-05-01 13:30:00 UTC</span>
+      </div>
+      <div class="news-title">Powell 警告能源價格推升通膨;5/15 卸任聯準會主席</div>
+      <div class="news-summary">聯準會 4 月會議按兵不動,Powell 在會後說明中強調能源價格回升正將通膨重新推高;Powell 將於 5/15 卸任,被市場視為 5 月四大關鍵催化劑之一。</div>
+      <div class="news-footer">
+        <a href="https://247wallst.com/investing/2026/05/01/bitcoin-btc-price-prediction-for-may/" target="_blank" rel="noopener">247wallst.com (mainstream)</a>
+        <span class="news-related">關聯: BTC、DXY、SPX</span>
+      </div>
+      <div class="news-secondary">次級源: fortune.com</div>
+    </div>
+    
+    <div class="news-card" data-impact="medium" data-region="Other" data-category="regulation">
+      <div class="news-meta">
+        <span class="impact-pill" style="background:#f59e0b;">MEDIUM</span>
+        <span class="cat-pill">regulation</span>
+        <span class="region-pill">Other</span>
+        <span class="time-pill">2026-04-28 16:00:00 UTC</span>
+      </div>
+      <div class="news-title">加拿大春季經濟更新中提案全國禁止加密 ATM</div>
+      <div class="news-summary">加拿大自由黨政府於 4/28 提出全國加密 ATM 禁令,理由為防止詐騙與洗錢。雖屬區域性監管,但延續北美對零售匿名通道的緊縮趨勢。</div>
+      <div class="news-footer">
+        <a href="https://thecryptobasic.com/top-crypto-news-in-us" target="_blank" rel="noopener">thecryptobasic.com (crypto_native)</a>
+        <span class="news-related">關聯: BTC</span>
+      </div>
+      <div class="news-secondary">次級源: lowenstein.com Crypto Brief</div>
+    </div>
+    
+    <div class="news-card" data-impact="medium" data-region="US" data-category="corporate">
+      <div class="news-meta">
+        <span class="impact-pill" style="background:#f59e0b;">MEDIUM</span>
+        <span class="cat-pill">corporate</span>
+        <span class="region-pill">US</span>
+        <span class="time-pill">2026-05-01 13:30:00 UTC</span>
+      </div>
+      <div class="news-title">Strategy 公司 5/5 公佈 Q1 財報;81.8 萬 BTC 平均成本 $75,537</div>
+      <div class="news-summary">Saylor 旗下 Strategy 將於 5/5 公佈 Q1 財報,涵蓋自戰爭以來最差季度;集團累計持有 818,334 BTC,平均成本 $75,537,僅略低於目前 $78,400 一帶現價。</div>
+      <div class="news-footer">
+        <a href="https://247wallst.com/investing/2026/05/01/bitcoin-btc-price-prediction-for-may/" target="_blank" rel="noopener">247wallst.com (mainstream)</a>
+        <span class="news-related">關聯: BTC、MSTR</span>
+      </div>
+      <div class="news-secondary">次級源: securitiesdocket.com</div>
+    </div>
+    
+    <div class="news-card" data-impact="low" data-region="US" data-category="regulation">
+      <div class="news-meta">
+        <span class="impact-pill" style="background:#22c55e;">LOW</span>
+        <span class="cat-pill">regulation</span>
+        <span class="region-pill">US</span>
+        <span class="time-pill">2026-04-27 18:00:00 UTC</span>
+      </div>
+      <div class="news-title">代理司法部長 Blanche 重申『停止以起訴監管』備忘</div>
+      <div class="news-summary">美國代理司法部長 Todd Blanche 於 4/27 拉斯維加斯 Bitcoin 2026 大會重申其 2025/4 備忘錄,延續對加密產業的較寬鬆執法傾向。</div>
+      <div class="news-footer">
+        <a href="https://thecryptobasic.com/top-crypto-news-in-us" target="_blank" rel="noopener">thecryptobasic.com (crypto_native)</a>
+        <span class="news-related">關聯: BTC</span>
+      </div>
+      <div class="news-secondary">次級源: —</div>
+    </div>
+    </div>
+</section>
+
+<!-- TECH (Agent 3) -->
+<section class="panel" style="margin-top:16px;">
+  <h2>技術與鏈上 · NETWORK &amp; PROTOCOL (Agent 3)</h2>
+  <div class="four-col">
+    <div class="stat"><div class="stat-label">全網算力 (估)</div><div class="stat-value">1,020 EH/s</div><div class="stat-sub">較峰值 1,160 EH/s -12%</div></div>
+    <div class="stat"><div class="stat-label">當前難度</div><div class="stat-value">135.59T</div><div class="stat-sub">距下次調整 ~53 區塊</div></div>
+    <div class="stat"><div class="stat-label">下次難度估值</div><div class="stat-value red">-3.07%</div><div class="stat-sub">預估降至 131.43T</div></div>
+    <div class="stat"><div class="stat-label">Mempool 狀態</div><div class="stat-value">—</div><div class="stat-sub">mempool.space 失敗</div></div>
+  </div>
+  <div class="three-col" style="margin-top:12px;">
+    <div class="panel-sub">
+      <h3>礦工經濟</h3>
+      <div style="font-size:0.85rem;">CoinShares Q1 2026 報告指出約 20% 礦工於現價下無法獲利,Q1 上市礦工合計賣出逾 32,000 BTC 以支應營運;5/2 難度下調 -3.07% 將部分緩解現金流壓力,但整體仍偏向礦工分發狀態。</div>
+      <div style="margin-top:6px;"><span class="signal-pill" style="background:#6b728022;color:#6b7280;border:1px solid #6b728066;">distributing</span></div>
+    </div>
+    <div class="panel-sub">
+      <h3>Lightning Network</h3>
+      <div style="font-size:0.85rem;">容量 <b>3,853 BTC</b></div>
+      <div style="font-size:0.85rem;">節點 <b>12,648</b> · 通道 <b>43,763</b></div>
+      <div style="font-size:0.78rem; color:var(--muted); margin-top:6px;">公開容量自 2023 高點下滑,網路趨向「更少節點 + 更大通道」</div>
+    </div>
+    <div class="panel-sub">
+      <h3>銘文 / Runes 活動</h3>
+      <div style="font-size:0.85rem;">Ordinals 累計銘文已突破 9000 萬枚,3 月二級銷售約 $46.8M、近 60,000 筆交易、14,909 名買家;Runes 採 OP_RETURN (≈80 bytes) 較 BRC-20 顯著節省區塊空間,當前手續費佔比未取得確切數字,整體屬中低活躍度。</div>
+    </div>
+  </div>
+  <details>
+    <summary>協議更新 (Bitcoin Core / BIP)</summary>
+    <pre>[
+  {
+    "title": "Bitcoin Core 持續開發 (參考公開倉庫)",
+    "summary": "Bitcoin Core master 分支持續推進審核與性能改善;本期未檢索到明確的新 BIP 提案或重大 PR 合併公告。",
+    "type": "core_commit",
+    "url": "https://github.com/bitcoin/bitcoin/commits/master",
+    "published_at": null
+  },
+  {
+    "title": "Eltoo / SIGHASH_ANYPREVOUT 仍處實驗階段",
+    "summary": "Bitcoin Core 2025 已含實驗性 SIGHASH_ANYPREVOUT 支援,可簡化 Lightning 通道更新並消除懲罰機制,惟啟用時程未定。",
+    "type": "discussion",
+    "url": "https://bitcoinops.org/",
+    "published_at": null
+  }
+]</pre>
+  </details>
+  <div style="margin-top:8px; font-size:0.85rem; color:#cbd5e1;">全網算力約 1,020 EH/s,較 2025/10 高點 1,160 EH/s 下滑約 12%,但已自 2 月 850 EH/s 顯著回升;目前難度 135.59T,預計約 9 小時後 (剩 53 區塊) 進行下次難度調整,估值降至 131.43T (-3.07%),對短線礦工現金流為正向但反映前期算力下滑後的修正。</div>
+</section>
+
+<!-- FOOTER -->
+<section class="panel" style="margin-top:16px;">
+  <h2>資料來源與品質 · DATA SOURCES &amp; QUALITY</h2>
+  <div class="footer-grid">
+    <div>
+      <h3>API 呼叫</h3>
+      <ul class="sources">
+        <li>Crypto.com Exchange API: 10 / 10 成功</li>
+        <li>Crypto.com K 線 (15m/1h/4h): 3 / 3 成功</li>
+        <li>Binance Public API: 0 / 3 (sandbox 阻擋)</li>
+        <li>mempool.space / 1ml.com / GitHub: 0 / 7 (sandbox 阻擋)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>WebSearch 彙整</h3>
+      <ul class="sources">
+        <li>ETF 4 月流向 — investing.com / theblock.co</li>
+        <li>難度調整 — coinwarz / bitref</li>
+        <li>Lightning 統計 — coinlaw.io / 1ml</li>
+        <li>新聞 — 247wallst / fortune / themarketperiodical / news.bitcoin.com</li>
+      </ul>
+    </div>
+    <div>
+      <h3>主要警告</h3>
+      <ul class="sources">
+        <li>所有非 anthropic.com 對外 fetch 全部失敗 — 已改以 WebSearch 整合</li>
+        <li>Agent 4 改用 Crypto.com 50 根 K 線替代 120 根 (規格降級)</li>
+        <li>部分 single_source_unverified — 已標記</li>
+        <li>大單訊號 venue_too_thin — Crypto.com 簿深度限制</li>
+      </ul>
+    </div>
+  </div>
+  <div style="margin-top:14px; font-size:0.78rem; color:var(--muted);">
+    生成時間: 2026-05-02 03:08:24 UTC · 排程任務 btc--dashboard · 4 Subagent 執行於主代理 process 內並行 · 整體耗時約 90s
+  </div>
+  <div style="margin-top:6px; font-size:0.78rem; color:var(--muted);">
+    本頁面所有內容僅為市場資訊整理與技術觀察,<b style="color:var(--orange);">不構成任何投資建議</b>。比特幣等加密資產波動劇烈,投資人應自行評估風險。
+  </div>
+  <div class="alert-bar" style="margin-top:10px;">
+    ⚠ 預測免責:Agent 4 預測為機率分布展示,並非價格目標承諾。本日因 Binance 直連失敗,已改用替代資料源,動能訊號可信度低於正常水準。<b>(非投資建議)</b>
+  </div>
+</section>
+
+<script>
+const KLINE = [["04-29 04", 76995.11, 77464.34, 76876.6, 77038.86, true], ["04-29 08", 77035.02, 77921.35, 76950.27, 77557.61, true], ["04-29 12", 77557.61, 77586.9, 75693.68, 75902.05, true], ["04-29 16", 75919.91, 76267.55, 74929.7, 75560.9, true], ["04-29 20", 75556.35, 76097.14, 75482.06, 75782.69, true], ["04-30 00", 75782.7, 76472.81, 75471.64, 75936.53, true], ["04-30 04", 75926.61, 76179.65, 75312.54, 76160.35, true], ["04-30 08", 76169.32, 76366.69, 75860.4, 76061.86, true], ["04-30 12", 76063.8, 76684.76, 76035.19, 76475.16, true], ["04-30 16", 76479.07, 76543.1, 76095.68, 76420.96, true], ["04-30 20", 76420.97, 76579.61, 76201.05, 76350.42, true], ["05-01 00", 76355.09, 77467.99, 76313.76, 77129.0, true], ["05-01 04", 77126.73, 77205.31, 76862.05, 77132.8, true], ["05-01 08", 77131.4, 77610.12, 77039.76, 77453.0, true], ["05-01 12", 77460.51, 78940.56, 77409.01, 78449.94, true], ["05-01 16", 78444.99, 78713.32, 78119.34, 78369.47, true], ["05-01 20", 78367.92, 78440.03, 77743.58, 78231.67, true], ["05-02 00*", 78231.67, 78529.99, 78166.26, 78426.84, false]];
+const ETF = [["04-26", 0, "Sunday/\u9031\u672b\u8cc7\u6599\u672a\u516c\u4f48"], ["04-27", -263.0, "FBTC \u55ae\u65e5 -$263M \u70ba 4 \u6708\u6700\u5927\u6d41\u51fa;IBIT \u4ecd\u8655\u9023\u7e8c\u6d41\u5165"], ["04-28", -89.7, "FBTC \u6301\u7e8c\u6d41\u51fa"], ["04-29", -148.4, "IBIT \u51fa\u73fe 9 \u65e5\u9023\u6d41\u5165\u5f8c\u9996\u65e5\u6de8\u6d41\u51fa -$89M"], ["04-30", 14.76, "\u6253\u7834\u9023 3 \u65e5\u6d41\u51fa,\u5c0f\u5e45\u6de8\u6d41\u5165"]];
+
+// 4h kline as candlestick using bar segments
+(function() {{
+  const ctx = document.getElementById('klineChart').getContext('2d');
+  const labels = KLINE.map(k => k[0]);
+  const opens = KLINE.map(k => k[1]);
+  const highs = KLINE.map(k => k[2]);
+  const lows = KLINE.map(k => k[3]);
+  const closes = KLINE.map(k => k[4]);
+  const isClosed = KLINE.map(k => k[5]);
+
+  // Use line chart of close + ribbon of high/low
+  const data = {{
+    labels: labels,
+    datasets: [
+      {{ label:'High', data:highs, borderColor:'#22c55e44', backgroundColor:'transparent', pointRadius:0, borderWidth:1 }},
+      {{ label:'Low', data:lows, borderColor:'#ef444444', backgroundColor:'transparent', pointRadius:0, borderWidth:1, fill:'-1', backgroundColor:'rgba(247,147,26,0.06)' }},
+      {{ label:'Close',
+         data:closes,
+         borderColor: ctx.createLinearGradient ? null : '#f7931a',
+         segment: {{
+           borderColor: ctx => isClosed[ctx.p1DataIndex]===false ? '#a855f7' : '#f7931a',
+           borderDash: ctx => isClosed[ctx.p1DataIndex]===false ? [5,4] : []
+         }},
+         backgroundColor:'transparent', pointRadius:3, pointBackgroundColor: ctx => isClosed[ctx.dataIndex]===false ? '#a855f7':'#f7931a',
+         tension:0.15, borderWidth:2 }}
+    ]
+  }};
+  new Chart(ctx, {{
+    type:'line',
+    data: data,
+    options: {{
+      responsive:true, maintainAspectRatio:false,
+      interaction: {{ mode:'index', intersect:false }},
+      plugins: {{ legend: {{ labels: {{ color:'#9ca3af' }} }} }},
+      scales: {{
+        x: {{ ticks: {{ color:'#9ca3af', maxRotation:0, autoSkip:true, maxTicksLimit:9 }}, grid: {{ color:'#2a2a2a' }} }},
+        y: {{ ticks: {{ color:'#9ca3af', callback:v => '$' + v.toLocaleString() }}, grid: {{ color:'#2a2a2a' }} }}
+      }}
+    }}
+  }});
+}})();
+
+// ETF bars
+(function() {{
+  const ctx = document.getElementById('etfChart').getContext('2d');
+  const labels = ETF.map(e => e[0]);
+  const vals = ETF.map(e => e[1]);
+  const colors = vals.map(v => v >= 0 ? '#22c55e' : '#ef4444');
+  new Chart(ctx, {{
+    type:'bar',
+    data: {{ labels, datasets:[{{ data:vals, backgroundColor:colors, borderRadius:3 }}] }},
+    options: {{
+      responsive:true, maintainAspectRatio:false,
+      plugins: {{ legend: {{ display:false }}, tooltip: {{ callbacks: {{ afterLabel: ctx => ETF[ctx.dataIndex][2] }} }} }},
+      scales: {{
+        x: {{ ticks: {{ color:'#9ca3af' }}, grid: {{ display:false }} }},
+        y: {{ ticks: {{ color:'#9ca3af', callback:v => '$' + v + 'M' }}, grid: {{ color:'#2a2a2a' }} }}
+      }}
+    }}
+  }});
+}})();
+
+// News filters
+document.getElementById('newsFilters').addEventListener('click', e => {{
+  if (!e.target.matches('.filter-btn')) return;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  const f = e.target.dataset.filter;
+  document.querySelectorAll('.news-card').forEach(c => {{
+    if (f==='all') c.style.display='';
+    else if (f.startsWith('impact-')) c.style.display = c.dataset.impact===f.slice(7) ? '' : 'none';
+    else if (f.startsWith('region-')) c.style.display = c.dataset.region===f.slice(7) ? '' : 'none';
+    else if (f.startsWith('cat-')) c.style.display = c.dataset.category===f.slice(4) ? '' : 'none';
+  }});
+}});
+</script>
+</body></html>

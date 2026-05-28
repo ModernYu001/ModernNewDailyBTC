@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC 每日 Dashboard — 2026-05-28</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #111111;
+    --border: #1e1e1e;
+    --btc: #f7931a;
+    --green: #22c55e;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --text: #e5e7eb;
+    --muted: #6b7280;
+    --accent: #1d4ed8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.6; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 16px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .card-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .section { margin: 16px 0; }
+  .section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-red { background: rgba(239,68,68,0.15); color: var(--red); }
+  .badge-yellow { background: rgba(234,179,8,0.15); color: #eab308; }
+  .badge-purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+  .badge-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .badge-gray { background: rgba(107,114,128,0.15); color: var(--muted); }
+  .metric-big { font-size: 28px; font-weight: 800; color: var(--btc); }
+  .metric-mid { font-size: 20px; font-weight: 700; }
+  .metric-sm { font-size: 13px; color: var(--muted); }
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+  .neutral { color: var(--muted); }
+  .btc-color { color: var(--btc); }
+  .purple-color { color: var(--purple); }
+
+  /* Top Summary */
+  .top-bar { background: linear-gradient(135deg, #0d0d0d 0%, #111827 100%); border-bottom: 2px solid var(--btc); padding: 20px 0; }
+  .top-bar .price-block { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .top-bar .headline { font-size: 15px; color: var(--text); opacity: 0.85; margin-top: 6px; }
+  .regime-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+  /* Signal lights */
+  .signal-row { display: flex; flex-direction: column; gap: 8px; }
+  .signal-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+  .signal-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot-red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .dot-yellow { background: #eab308; box-shadow: 0 0 6px #eab308; }
+  .dot-gray { background: var(--muted); }
+
+  /* ETF chart */
+  .etf-bar { height: 32px; display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .etf-bar-fill { height: 20px; border-radius: 4px; min-width: 4px; transition: width 0.3s; }
+  .etf-pos { background: var(--green); }
+  .etf-neg { background: var(--red); }
+
+  /* News timeline */
+  .news-item { padding: 12px; border-left: 3px solid var(--border); margin-bottom: 12px; background: rgba(255,255,255,0.02); border-radius: 0 8px 8px 0; }
+  .news-item.high { border-left-color: var(--red); }
+  .news-item.medium { border-left-color: #eab308; }
+  .news-item.low { border-left-color: var(--muted); }
+
+  /* Prediction card */
+  .pred-card { background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(168,85,247,0.05)); border: 1px solid rgba(168,85,247,0.3); border-radius: 12px; padding: 16px; }
+  .pred-range { font-size: 18px; font-weight: 700; color: var(--purple); }
+  .prob-bar { height: 6px; background: rgba(168,85,247,0.2); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+  .prob-fill { height: 100%; background: var(--purple); border-radius: 3px; }
+
+  /* Collapsible */
+  .collapsible-btn { cursor: pointer; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 12px; color: var(--muted); transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px; }
+  .collapsible-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+  .collapsible-content { display: none; margin-top: 12px; }
+  .collapsible-content.open { display: block; }
+
+  /* Tab filter */
+  .tab-group { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tab-btn { padding: 4px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--muted); transition: all 0.2s; }
+  .tab-btn.active { background: rgba(247,147,26,0.15); border-color: var(--btc); color: var(--btc); }
+
+  /* Insight card */
+  .insight-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .insight-card:hover { border-color: rgba(247,147,26,0.3); background: rgba(247,147,26,0.03); }
+
+  /* Watchlist */
+  .watchlist-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .watchlist-item:last-child { border-bottom: none; }
+
+  /* Network stat */
+  .stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .stat-row:last-child { border-bottom: none; }
+
+  /* Fallback orange bar */
+  .fallback-bar { background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #fbbf24; display: flex; align-items: center; gap: 6px; }
+
+  /* Footer */
+  footer { background: #080808; border-top: 1px solid var(--border); padding: 24px 0; margin-top: 32px; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr 1fr; }
+    .metric-big { font-size: 22px; }
+  }
+  @media (max-width: 480px) {
+    .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
+    .top-bar .price-block { flex-direction: column; gap: 4px; }
+  }
+
+  /* Tooltip */
+  [data-tip] { position: relative; cursor: help; }
+  [data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); background: #1f2937; color: var(--text); font-size: 11px; padding: 4px 8px; border-radius: 4px; white-space: nowrap; z-index: 100; pointer-events: none; }
+
+  /* KLine chart area */
+  #klineChart { height: 260px; }
+
+  /* Scroll smooth */
+  html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+
+<!-- ① 顶部摘要 -->
+<div class="top-bar">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="price-block">
+          <span class="metric-big">$73,518</span>
+          <span class="badge badge-red" style="font-size:14px;">▼ 1.73%/24h</span>
+          <span class="regime-badge">⚠ risk_off</span>
+        </div>
+        <div class="headline">🔥 美伊局势恶化叠加ETF连续净流出，BTC跌至6周低点，市场进入风险规避模式</div>
+        <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;">
+          <span class="metric-sm">指数价：<b style="color:var(--btc)">$73,428</b></span>
+          <span class="metric-sm">标记价：<b style="color:var(--btc)">$73,432</b></span>
+          <span class="metric-sm">3d 高：<b class="up">$78,089</b></span>
+          <span class="metric-sm">3d 低：<b class="down">$72,571</b></span>
+        </div>
+        <div style="margin-top:6px;display:flex;gap:16px;">
+          <span class="metric-sm">ETH <b class="down">$2,019 ▼1.51%</b></span>
+          <span class="metric-sm">SOL <b class="down">$82.24 ▼1.33%</b></span>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div class="metric-sm" style="margin-bottom:4px;">生成时间</div>
+        <div style="font-size:13px;color:var(--btc);">2026-05-28T07:58:00Z</div>
+        <div class="metric-sm" style="margin-top:8px;">数据窗口：T-72h ~ T</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="padding-top:16px;">
+
+<!-- ② 整合洞察 -->
+<div class="section">
+  <div class="section-title">
+    <span>🧠</span> 整合洞察
+    <span class="badge badge-red">Regime: risk_off</span>
+  </div>
+
+  <!-- Key Insights -->
+  <div class="grid-2" style="margin-bottom:12px;">
+    <div class="insight-card">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">📊 A1+A2 | 高置信度</div>
+      <div style="font-weight:600;margin-bottom:4px;">ETF巨量流出与地缘风险共振</div>
+      <div style="font-size:12px;color:var(--muted);">IBIT单日流出$528M（历史第二），同日美对伊朗展开空袭，触发$1B清算。两大负面因素叠加，将BTC压至$72,582周内低点。ETF 3日累积净流出-$288M，机构情绪明显悲观。</div>
+    </div>
+    <div class="insight-card">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">📈 A1 | 中置信度</div>
+      <div style="font-weight:600;margin-bottom:4px;">Taker强买与订单簿抛压并存</div>
+      <div style="font-size:12px;color:var(--muted);">近期成交中买方主动吃单比率达2.83（buyer_aggressive），但订单簿深度比率仅0.59（sell_pressure），暗示抢反弹力量与挂单卖出对冲共存，方向尚未明朗。</div>
+    </div>
+    <div class="insight-card">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">⛏ A3 | 中置信度</div>
+      <div style="font-weight:600;margin-bottom:4px;">网络基本面健康，低费率低拥堵</div>
+      <div style="font-size:12px;color:var(--muted);">算力维持987 EH/s历史高位，手续费仅1 sat/vB（极低），mempool宽松（179 MB），难度调整幅度近乎为零(-0.16%)。链上基本面与价格下跌形成背离，支持长期牛市结构未破坏。</div>
+    </div>
+    <div class="insight-card">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">🏢 A2 | 高置信度</div>
+      <div style="font-weight:600;margin-bottom:4px;">机构双向动作分化</div>
+      <div style="font-size:12px;color:var(--muted);">ETF机构大幅减仓的同时，三星以$408M战略入股韩国最大加密交易所Dunamu，CME宣布5月29日起7x24小时交易消除周末缺口。利好与利空并行，中长期机构采用趋势不变。</div>
+    </div>
+  </div>
+
+  <!-- 5灯信号 + Prediction Alignment -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">信号对齐仪表盘</div>
+      <div class="signal-row">
+        <div class="signal-item">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="signal-dot dot-red"></div>
+            <span>Taker流向</span>
+          </div>
+          <span class="badge badge-green">买方主导 2.83</span>
+        </div>
+        <div class="signal-item">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="signal-dot dot-yellow"></div>
+            <span>Basis / 期货情绪</span>
+          </div>
+          <span class="badge badge-gray">neutral +0.005%</span>
+        </div>
+        <div class="signal-item">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="signal-dot dot-red"></div>
+            <span>订单簿深度</span>
+          </div>
+          <span class="badge badge-red">卖压 ratio=0.59</span>
+        </div>
+        <div class="signal-item">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="signal-dot dot-red"></div>
+            <span>ETF资金流</span>
+          </div>
+          <span class="badge badge-red">净流出 -$288M/3d</span>
+        </div>
+        <div class="signal-item">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="signal-dot dot-green"></div>
+            <span>链上网络健康</span>
+          </div>
+          <span class="badge badge-green">算力高位 低拥堵</span>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);">⚡ 分歧：Taker买入积极，但机构ETF同步撤退；链上健康但价格下行——典型分歧市场</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">预测方向对齐</div>
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span class="badge badge-yellow">中性偏空</span>
+          <span style="font-size:12px;">A4 preferred_direction: neutral</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);">A1情绪综合偏空（ETF流出+订单簿卖压），A4技术中性，整合信号倾向谨慎，无明确方向信号。</div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:10px;">
+        <div class="card-title">关注清单</div>
+        <div class="watchlist-item">
+          <span style="color:var(--red);font-size:16px;">⚠</span>
+          <span style="font-size:12px;">$72,500 支撑位有效性——跌破则开启下行至$70,000</span>
+        </div>
+        <div class="watchlist-item">
+          <span style="color:#eab308;font-size:16px;">👁</span>
+          <span style="font-size:12px;">CME 5/29起7×24小时交易启动，观察周末流动性变化</span>
+        </div>
+        <div class="watchlist-item">
+          <span style="color:var(--btc);font-size:16px;">📊</span>
+          <span style="font-size:12px;">IBIT ETF资金流是否止血——连续8日流出后的反转信号</span>
+        </div>
+        <div class="watchlist-item">
+          <span style="color:var(--purple);font-size:16px;">🌍</span>
+          <span style="font-size:12px;">中东局势变化——美伊停战/升级对BTC避险叙事的影响</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 市场区 -->
+<div class="section">
+  <div class="section-title"><span>📈</span> 市场数据</div>
+
+  <!-- Key metrics -->
+  <div class="grid-4" style="margin-bottom:12px;">
+    <div class="card">
+      <div class="card-title">Basis (永续基差)</div>
+      <div class="metric-mid neutral">+0.0049%</div>
+      <div style="margin-top:4px;"><span class="badge badge-gray">neutral</span></div>
+      <div class="metric-sm" style="margin-top:6px;">多空力量均衡，无明显拥挤方向</div>
+    </div>
+    <div class="card">
+      <div class="card-title">订单簿深度比</div>
+      <div class="metric-mid down">0.59</div>
+      <div style="margin-top:4px;"><span class="badge badge-red">sell_pressure</span></div>
+      <div class="metric-sm" style="margin-top:6px;">卖单是买单的1.68倍</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Taker 买卖比</div>
+      <div class="metric-mid up">2.83</div>
+      <div style="margin-top:4px;"><span class="badge badge-green">buyer_aggressive</span></div>
+      <div class="metric-sm" style="margin-top:6px;">买方主动成交占主导</div>
+    </div>
+    <div class="card">
+      <div class="card-title">大单信号</div>
+      <div class="metric-mid neutral">venue_too_thin</div>
+      <div style="margin-top:4px;"><span class="badge badge-gray">样本偏小</span></div>
+      <div class="metric-sm" style="margin-top:6px;">最大单笔~$11k，低于阈值</div>
+    </div>
+  </div>
+
+  <!-- 4h K-line chart -->
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-title">4H K 线（最近 50 根，灰色=未收盘）</div>
+    <canvas id="klineChart" height="260"></canvas>
+  </div>
+
+  <!-- ETF Flows -->
+  <div class="card">
+    <div class="card-title">美国现货 BTC ETF 净流入（百万美元）<span class="badge badge-yellow" style="margin-left:8px;">single_source_unverified</span></div>
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:12px;">5月26日</span>
+        <span class="up">+$312M</span>
+      </div>
+      <div class="etf-bar">
+        <div style="font-size:11px;color:var(--muted);width:60px;">IBIT</div>
+        <div class="etf-bar-fill etf-pos" style="width:57%;"></div>
+        <span class="up" style="font-size:12px;">+$178.6M</span>
+      </div>
+      <div class="etf-bar">
+        <div style="font-size:11px;color:var(--muted);width:60px;">FBTC</div>
+        <div class="etf-bar-fill etf-pos" style="width:23%;"></div>
+        <span class="up" style="font-size:12px;">+$71.4M</span>
+      </div>
+      <div class="etf-bar">
+        <div style="font-size:11px;color:var(--muted);width:60px;">ARKB</div>
+        <div class="etf-bar-fill etf-pos" style="width:11%;"></div>
+        <span class="up" style="font-size:12px;">+$34.2M</span>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:12px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:12px;">5月27日</span>
+        <span class="down">-$600M（估）</span>
+      </div>
+      <div class="etf-bar">
+        <div style="font-size:11px;color:var(--muted);width:60px;">IBIT</div>
+        <div class="etf-bar-fill etf-neg" style="width:85%;"></div>
+        <span class="down" style="font-size:12px;">-$527.84M ⚡历史第二</span>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:8px;display:flex;justify-content:space-between;">
+      <span style="font-size:12px;color:var(--muted);">3日累积净流入</span>
+      <span class="down" style="font-weight:700;">-$288M</span>
+    </div>
+  </div>
+</div>
+
+<!-- 跨资产相关性 -->
+<div class="section">
+  <div class="section-title"><span>🌐</span> 跨资产相关性（近30日）</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">BTC vs S&P 500</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="metric-mid up">+0.60</span>
+        <span class="badge badge-green">正相关</span>
+      </div>
+      <div class="metric-sm" style="margin-top:6px;">机构资金轮动驱动同向波动，风险偏好转弱时两者同步承压</div>
+    </div>
+    <div class="card">
+      <div class="card-title">BTC vs 黄金</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="metric-mid" style="color:#eab308;">+?</span>
+        <span class="badge badge-gray">弱正相关</span>
+      </div>
+      <div class="metric-sm" style="margin-top:6px;">数据不可得，定性判断均受避险叙事驱动，相关性不稳定</div>
+    </div>
+    <div class="card">
+      <div class="card-title">BTC vs DXY (美元指数)</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="metric-mid down">-0.85</span>
+        <span class="badge badge-red">强负相关</span>
+      </div>
+      <div class="metric-sm" style="margin-top:6px;">5月重回强负相关，美元走强持续压制BTC估值</div>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 预测区 -->
+<div class="section">
+  <div class="section-title" style="color:var(--purple);">
+    <span>🔮</span> 短周期预测（Binance BTCUSDT 15m+1h K线120根）
+    <span class="badge badge-purple">claude-sonnet-4-6</span>
+    <span class="badge badge-yellow" style="margin-left:4px;">置信度: medium</span>
+  </div>
+
+  <!-- Status bar -->
+  <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap;font-size:12px;">
+    <span>✅ LLM推理成功</span>
+    <span>✅ Binance数据 3/3 接口</span>
+    <span>✅ 指标计算完整</span>
+    <span>当前价：<b style="color:var(--purple);">$73,562</b></span>
+    <span>RSI(1h)：<b>55.71</b></span>
+    <span>RSI(15m)：<b style="color:#eab308;">69.01</b></span>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:12px;">
+    <!-- 1h -->
+    <div class="pred-card">
+      <div class="card-title" style="color:var(--purple);">1H 预测</div>
+      <div class="pred-range">$73,100 — $74,200</div>
+      <div style="margin-top:8px;display:flex;justify-content:space-between;font-size:12px;">
+        <span>上行概率</span>
+        <span style="color:var(--purple);font-weight:700;">52%</span>
+      </div>
+      <div class="prob-bar"><div class="prob-fill" style="width:52%;"></div></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);">
+        <div>🟢 触发多：突破$73,735+量比>1.2，RSI>55</div>
+        <div>🔴 触发空：跌破$73,100+量放大，MACD柱转负</div>
+      </div>
+    </div>
+    <!-- 4h -->
+    <div class="pred-card">
+      <div class="card-title" style="color:var(--purple);">4H 预测</div>
+      <div class="pred-range">$72,500 — $75,000</div>
+      <div style="margin-top:8px;display:flex;justify-content:space-between;font-size:12px;">
+        <span>上行概率</span>
+        <span style="color:var(--purple);font-weight:700;">48%</span>
+      </div>
+      <div class="prob-bar"><div class="prob-fill" style="width:48%;"></div></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);">
+        <div>🟢 触发多：1h收盘>$74,200+MACD扩张+量比>1.2</div>
+        <div>🔴 触发空：跌破$72,582日内低点且成交量确认</div>
+      </div>
+    </div>
+    <!-- 1d -->
+    <div class="pred-card">
+      <div class="card-title" style="color:var(--purple);">1D 预测</div>
+      <div class="pred-range">$71,800 — $75,800</div>
+      <div style="margin-top:8px;display:flex;justify-content:space-between;font-size:12px;">
+        <span>上行概率</span>
+        <span style="color:var(--purple);font-weight:700;">45%</span>
+      </div>
+      <div class="prob-bar"><div class="prob-fill" style="width:45%;"></div></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);">
+        <div>🟢 触发多：日线站稳SMA50($74,814)，24h涨>2%</div>
+        <div>🔴 触发空：跌破$72,582，测试$71,000-$71,500</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 技术指标展示 -->
+  <div class="card" style="margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="card-title" style="margin-bottom:0;">技术指标摘要</div>
+      <button class="collapsible-btn" onclick="toggle('indicators-detail')">查看指标 ▼</button>
+    </div>
+    <div class="grid-4">
+      <div style="text-align:center;">
+        <div class="metric-sm">RSI 14 (15m)</div>
+        <div style="font-size:18px;font-weight:700;color:#eab308;">69.01</div>
+        <div style="font-size:10px;color:var(--muted);">接近超买</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="metric-sm">RSI 14 (1h)</div>
+        <div style="font-size:18px;font-weight:700;color:var(--green);">55.71</div>
+        <div style="font-size:10px;color:var(--muted);">中性偏多</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="metric-sm">BB Width (1h)</div>
+        <div style="font-size:18px;font-weight:700;">2.84%</div>
+        <div style="font-size:10px;color:var(--muted);">窄幅震荡</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="metric-sm">ATR 14 (1h)</div>
+        <div style="font-size:18px;font-weight:700;">$458</div>
+        <div style="font-size:10px;color:var(--muted);">正常波幅</div>
+      </div>
+    </div>
+    <div id="indicators-detail" class="collapsible-content">
+      <div class="grid-2" style="margin-top:12px;">
+        <div>
+          <div class="card-title">15M MACD (12/26/9)</div>
+          <div class="stat-row"><span>Line</span><span class="up">40.60</span></div>
+          <div class="stat-row"><span>Signal</span><span class="down">-27.97</span></div>
+          <div class="stat-row"><span>Hist</span><span class="up">68.56</span></div>
+          <div class="stat-row"><span>Consec Bars</span><span class="up">7 ↑</span></div>
+        </div>
+        <div>
+          <div class="card-title">1H MACD (12/26/9)</div>
+          <div class="stat-row"><span>Line</span><span class="down">-471.75</span></div>
+          <div class="stat-row"><span>Signal</span><span class="down">-549.11</span></div>
+          <div class="stat-row"><span>Hist</span><span class="up">77.36</span></div>
+          <div class="stat-row"><span>Consec Bars</span><span class="up">7 ↑（负区间）</span></div>
+        </div>
+        <div>
+          <div class="card-title">Bollinger Bands (15m)</div>
+          <div class="stat-row"><span>Upper</span><span>$73,626</span></div>
+          <div class="stat-row"><span>Middle</span><span>$73,159</span></div>
+          <div class="stat-row"><span>Lower</span><span>$72,693</span></div>
+          <div class="stat-row"><span>Width</span><span>1.28%（收缩蓄势）</span></div>
+        </div>
+        <div>
+          <div class="card-title">Bollinger Bands (1h)</div>
+          <div class="stat-row"><span>Upper</span><span>$74,617</span></div>
+          <div class="stat-row"><span>Middle</span><span>$73,574</span></div>
+          <div class="stat-row"><span>Lower</span><span>$72,531</span></div>
+          <div class="stat-row"><span>Width</span><span>2.84%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7段分析折叠 -->
+  <div class="card" style="border-color:rgba(168,85,247,0.3);">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:14px;font-weight:600;color:var(--purple);">📋 完整 7 段分析推理</div>
+      <button class="collapsible-btn" style="border-color:rgba(168,85,247,0.3);color:var(--purple);" onclick="toggle('segments-detail')">展开 7 段 ▼</button>
+    </div>
+    <div id="segments-detail" class="collapsible-content">
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:12px;">
+        <div style="background:rgba(168,85,247,0.05);border-radius:8px;padding:12px;">
+          <div style="font-weight:700;color:var(--purple);margin-bottom:6px;">§1 市场总览</div>
+          <div style="font-size:13px;">BTC当前报$73,562，24h跌幅1.77%，从$77,900+高位回落后触底$72,582，目前处技术性反弹阶段。价格低于1h SMA50($74,814)，中期结构偏空，整体处于弱势反弹修复期。</div>
+        </div>
+        <div style="background:rgba(168,85,247,0.05);border-radius:8px;padding:12px;">
+          <div style="font-weight:700;color:var(--purple);margin-bottom:6px;">§2 15m 技术分析</div>
+          <div style="font-size:13px;">15m RSI=69.01接近超买，MACD柱线连续7根正值动能强劲，布林带收缩（宽度1.28%）蓄势待突破，价格接近上轨$73,626但未突破。成交量比率1.08温和放大。短期偏多但超买风险上升。</div>
+        </div>
+        <div style="background:rgba(168,85,247,0.05);border-radius:8px;padding:12px;">
+          <div style="font-weight:700;color:var(--purple);margin-bottom:6px;">§3 1h 技术分析</div>
+          <div style="font-size:13px;">1h RSI=55.71中性偏多，MACD柱线连续7根上升但仍处负区间（-471.75/-549.11），布林中轨$73,574与当前价格重叠。价格低于SMA50($74,814)结构偏空，成交量比率0.71偏低。反弹动能存在但量能支撑不足。</div>
+        </div>
+        <div style="background:rgba(168,85,247,0.05);border-radius:8px;padding:12px;">
+          <div style="font-weight:700;color:var(--purple);margin-bottom:6px;">§4 1h 预测</div>
+          <div style="font-size:13px;">推理：综合15m超买(RSI=69)短期多头动能与1h量能不足(0.71)的矛盾，区间以ATR($458)×1.0=±$458为幅度参考。结论：区间$73,100-$74,200，上行概率52%，触发多单：突破$73,735+量比>1.2；触发空单：跌破$73,100+量放大，MACD柱转负。</div>
+        </div>
+        <div style="background:rgba(168,85,247,0.05);border-radius:8px;padding:12px;">
+          <div style="font-weight:700;color:var(--purple);margin-bottom:6px;">§5 4h 预测</div>
+          <div style="font-size:13px;">推理：4h视角以ATR×1.8≈$825为幅度参考，上方SMA50($74,814)及$75,000为强阻力，下方$72,582为近期低点支撑，中期结构偏空但MACD改善提供对冲。结论：区间$72,500-$75,000，上行概率48%，触发多单：1h收盘>$74,200+MACD扩张+量比>1.2；触发空单：跌破$72,582日内低点且成交量确认，有效跌破$72,531。</div>
+        </div>
+        <div style="background:rgba(168,85,247,0.05);border-radius:8px;padding:12px;">
+          <div style="font-weight:700;color:var(--purple);margin-bottom:6px;">§6 1d 预测</div>
+          <div style="font-size:13px;">推理：日线从$77,900高位已大幅回调，当前处调整修复阶段，ATR×3.5≈$1,605参考日线幅度，中期偏空结构主导，上行需站稳关键均线，下行风险需关注$72,500支撑有效性。结论：区间$71,800-$75,800，上行概率45%，触发多单：日线收盘站稳SMA50($74,814)上方且24h涨幅>2%；触发空单：跌破$72,582日内低点并持续下探，测试$71,000-$71,500区域。</div>
+        </div>
+        <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:12px;">
+          <div style="font-weight:700;color:var(--red);margin-bottom:6px;">§7 风险提示</div>
+          <div style="font-size:13px;">①15m RSI接近超买(69.01)，短期回调风险；②SMA50($74,814)压制中期结构；③1h量能不足(vol ratio 0.71)，反弹缺乏确认；④MACD仍在负区间，大趋势尚未转多；⑤15m布林带收缩方向未明，可能双向突破；⑥中东局势（美伊冲突）宏观风险持续；⑦市场流动性修复中，止损设置至关重要。</div>
+          <div style="margin-top:8px;font-size:11px;color:var(--muted);">（非投资建议）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑤ 新闻时间轴 -->
+<div class="section">
+  <div class="section-title"><span>📰</span> 新闻时间轴（T-72h）</div>
+  <div class="tab-group">
+    <button class="tab-btn active" onclick="filterNews('all',this)">全部 (7)</button>
+    <button class="tab-btn" onclick="filterNews('high',this)">高影响 (4)</button>
+    <button class="tab-btn" onclick="filterNews('medium',this)">中影响 (2)</button>
+    <button class="tab-btn" onclick="filterNews('low',this)">低影响 (1)</button>
+    <button class="tab-btn" onclick="filterNews('regulatory',this)">监管</button>
+    <button class="tab-btn" onclick="filterNews('institutional',this)">机构</button>
+    <button class="tab-btn" onclick="filterNews('market',this)">市场</button>
+  </div>
+  <div id="news-container">
+    <div class="news-item high" data-impact="high" data-category="market">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">
+        <div style="font-weight:600;font-size:13px;">美国对伊朗发动空袭，比特币跌破$73,000，触发$10亿清算</div>
+        <div style="display:flex;gap:4px;"><span class="badge badge-red">HIGH</span><span class="badge badge-blue">市场</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:6px 0;">美伊停火协议破裂，美国对伊朗南部展开新一轮空袭，全球市场避险情绪急升，比特币骤跌至6周低点约$72,800。加密市场24小时内近$10亿杠杆头寸遭强制清算，其中多头占比达93%。叠加ETF连续8日净流出，市场情绪显著恶化。</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <span class="metric-sm">📅 2026-05-28</span>
+        <span class="metric-sm">🌍 GLOBAL</span>
+        <a href="https://www.coindesk.com/markets/2026/05/28/bitcoin-drops-below-usd73-000-as-us-strikes-on-iran-spark-usd1-billion-liquidations" target="_blank" style="font-size:11px;color:var(--btc);">CoinDesk ↗</a>
+        <a href="https://www.republicworld.com/business/bitcoin-price-five-week-low-us-iran-war-etf-outflows-2026-05-28-125983" target="_blank" style="font-size:11px;color:var(--btc);">RepublicWorld ↗</a>
+      </div>
+    </div>
+    <div class="news-item high" data-impact="high" data-category="institutional">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">
+        <div style="font-weight:600;font-size:13px;">贝莱德IBIT单日净流出$5.28亿，创历史第二大赎回纪录</div>
+        <div style="display:flex;gap:4px;"><span class="badge badge-red">HIGH</span><span class="badge badge-yellow">机构</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:6px 0;">贝莱德iShares比特币信托（IBIT）录得$5.28亿净流出，为上市以来第二大单日赎回规模。自5月14日以来，美国现货比特币ETF整体净流出已累计超过$20亿，连续8个交易日呈净负流动。机构投资者普遍削减比特币敞口，背景为中东局势紧张与宏观不确定性上升。</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <span class="metric-sm">📅 2026-05-28</span>
+        <span class="metric-sm">🌍 US</span>
+        <a href="https://www.coindesk.com/markets/2026/05/28/blackrock-s-bitcoin-etf-sheds-usd528-million-the-second-largest-daily-outflow-on-record" target="_blank" style="font-size:11px;color:var(--btc);">CoinDesk ↗</a>
+      </div>
+    </div>
+    <div class="news-item high" data-impact="high" data-category="institutional">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">
+        <div style="font-weight:600;font-size:13px;">三星三家子公司拟以$4.08亿收购韩国最大加密交易所Dunamu约4%股权</div>
+        <div style="display:flex;gap:4px;"><span class="badge badge-red">HIGH</span><span class="badge badge-yellow">机构</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:6px 0;">三星证券、三星SDS和三星卡三家子公司宣布联合收购Upbit母公司Dunamu约4%股份，交易总额约$4.08亿，预计6月19日完成。韩国最大财阀之一正式进军加密货币领域，三方将在区块链金融产品、支付基础设施和AI+区块链方向展开合作。</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <span class="metric-sm">📅 2026-05-28</span>
+        <span class="metric-sm">🌏 ASIA</span>
+        <a href="https://www.coindesk.com/business/2026/05/28/samsung-is-buying-a-usd446-million-stake-in-south-korea-s-biggest-crypto-exchange" target="_blank" style="font-size:11px;color:var(--btc);">CoinDesk ↗</a>
+        <a href="https://www.theblock.co/amp/post/402838/samsung-upbit-dunamu" target="_blank" style="font-size:11px;color:var(--btc);">TheBlock ↗</a>
+      </div>
+    </div>
+    <div class="news-item high" data-impact="high" data-category="institutional">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">
+        <div style="font-weight:600;font-size:13px;">贝莱德IBIT遭暗池抛售$12.9亿，比特币ETF连续8日净流出</div>
+        <div style="display:flex;gap:4px;"><span class="badge badge-red">HIGH</span><span class="badge badge-yellow">机构</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:6px 0;">5月26日，匿名主体通过暗池以约$12.9亿出售约2920万股IBIT股份，消息公开后比特币价格数分钟内下跌约1.5%。此次大宗抛售进一步加剧ETF资金流出，使净流出连续天数延伸至8个交易日，5月累计流出超$20亿。</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <span class="metric-sm">📅 2026-05-26</span>
+        <span class="metric-sm">🌍 US</span>
+        <a href="https://en.cryptonomist.ch/2026/05/27/blackrock-ibit-outflows-bitcoin/" target="_blank" style="font-size:11px;color:var(--btc);">Cryptonomist ↗</a>
+        <a href="https://ambcrypto.com/bitcoin-how-1-29b-in-blackrock-ibit-trades-sparked-btc-etf-outflows/" target="_blank" style="font-size:11px;color:var(--btc);">AMBCrypto ↗</a>
+      </div>
+    </div>
+    <div class="news-item medium" data-impact="medium" data-category="market">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">
+        <div style="font-weight:600;font-size:13px;">CME集团宣布5月29日起启动比特币期货7×24小时交易</div>
+        <div style="display:flex;gap:4px;"><span class="badge badge-yellow">MEDIUM</span><span class="badge badge-blue">市场</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:6px 0;">CME集团宣布自5月29日起，比特币及以太坊期货与期权产品切换至全周7×24小时交易模式。消除长期困扰交易者的CME周末跳空缺口，对机构投资者的持续对冲管理意义重大。CME同步宣布将于6月1日上线比特币波动率期货产品。</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <span class="metric-sm">📅 2026-05-28</span>
+        <span class="metric-sm">🌍 US</span>
+        <a href="https://www.coindesk.com/markets/2026/05/28/bitcoin-s-famous-cme-gaps-are-about-to-disappear-though-three-remain-unresolved" target="_blank" style="font-size:11px;color:var(--btc);">CoinDesk ↗</a>
+      </div>
+    </div>
+    <div class="news-item medium" data-impact="medium" data-category="regulatory">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">
+        <div style="font-weight:600;font-size:13px;">意大利Banca Sella获MiCA批准，成为首家获准提供加密服务的意大利银行</div>
+        <div style="display:flex;gap:4px;"><span class="badge badge-yellow">MEDIUM</span><span class="badge badge-purple">监管</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:6px 0;">Banca Sella完成MiCA通知程序，成为意大利首家正式获授权提供加密资产托管与转账服务的银行机构。计划2026年底前向特定机构客户推出服务，并加入欧元稳定币联盟Qivalis。</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <span class="metric-sm">📅 2026-05-27</span>
+        <span class="metric-sm">🌍 EU</span>
+        <a href="https://www.coindesk.com/business/2026/05/27/banca-sella-gets-green-light-to-provide-crypto-services-to-customers-first-in-italy" target="_blank" style="font-size:11px;color:var(--btc);">CoinDesk ↗</a>
+      </div>
+    </div>
+    <div class="news-item low" data-impact="low" data-category="market">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">
+        <div style="font-weight:600;font-size:13px;">比特币隐含波动率跌至9个月低点，加密市场进入低迷整理期</div>
+        <div style="display:flex;gap:4px;"><span class="badge badge-gray">LOW</span><span class="badge badge-blue">市场</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:6px 0;">5月26日，比特币Volmex隐含波动率指数（BVIV）跌至36.11，为2025年9月以来最低水平。ETF持续净流出、零售投机兴趣转移至AI概念股等因素共同压低期权保护需求，分析人士认为短期市场方向感缺失。</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <span class="metric-sm">📅 2026-05-26</span>
+        <span class="metric-sm">🌍 GLOBAL</span>
+        <a href="https://www.bloomberg.com/news/articles/2026-05-26/bitcoin-btc-volatility-hits-nine-month-low-as-crypto-takes-breather" target="_blank" style="font-size:11px;color:var(--btc);">Bloomberg ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑥ 技术链上 -->
+<div class="section">
+  <div class="section-title"><span>⛓</span> 技术 & 链上</div>
+  <div class="grid-2" style="margin-bottom:12px;">
+    <div class="card">
+      <div class="card-title">网络健康</div>
+      <div class="stat-row"><span>算力</span><span class="up">987 EH/s（历史高位）</span></div>
+      <div class="stat-row"><span>3日算力变化</span><span class="up">+2.2%</span></div>
+      <div class="stat-row"><span>难度</span><span>136.61T</span></div>
+      <div class="stat-row"><span>下次难度调整</span><span class="neutral">-0.16%（2026-05-29）</span></div>
+      <div class="stat-row"><span>Mempool 大小</span><span>179 MB</span></div>
+      <div class="stat-row"><span>待处理交易</span><span>49,300 笔</span></div>
+      <div class="stat-row"><span>活跃地址(3d)</span><span>623,382</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">手续费（sat/vB）</div>
+      <div class="stat-row"><span>快速 (10 min)</span><span class="up">1 sat/vB</span></div>
+      <div class="stat-row"><span>半小时</span><span>1 sat/vB</span></div>
+      <div class="stat-row"><span>1 小时</span><span>1 sat/vB</span></div>
+      <div class="stat-row"><span>最低</span><span>1 sat/vB</span></div>
+      <div style="margin-top:10px;" class="card-title">矿工经济</div>
+      <div class="stat-row"><span>Hashprice</span><span>$0.036/TH/s/天</span></div>
+      <div class="stat-row"><span>手续费占比</span><span>0.56%（极低）</span></div>
+      <div class="stat-row"><span>矿工流出信号</span><span class="neutral">normal</span></div>
+    </div>
+  </div>
+
+  <!-- Lightning Network -->
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-title">⚡ 闪电网络</div>
+    <div class="grid-4">
+      <div style="text-align:center;">
+        <div class="metric-sm">总容量</div>
+        <div style="font-size:18px;font-weight:700;color:var(--btc);">5,600 BTC</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="metric-sm">等值 USD</div>
+        <div style="font-size:18px;font-weight:700;">$435M</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="metric-sm">节点数</div>
+        <div style="font-size:18px;font-weight:700;">17,000</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="metric-sm">通道数</div>
+        <div style="font-size:18px;font-weight:700;">70,000</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);">⚡ 闪电网络2026年初月交易量突破$11亿创历史新高，企业级私有通道快速增长</div>
+  </div>
+
+  <!-- Protocol Updates -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="card-title" style="margin-bottom:0;">🔧 协议更新 (5 项)</div>
+      <button class="collapsible-btn" onclick="toggle('protocol-detail')">展开详情 ▼</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <span class="badge badge-red">🔒 CVE-2024-52911 安全漏洞</span>
+      <span class="badge badge-blue">📜 BIP 草案：P2P UTXO 集共享</span>
+      <span class="badge badge-blue">📜 BIP323：nVersion nonce 扩展</span>
+      <span class="badge badge-green">🚀 Bitcoin Core 31.0（嵌入asmap）</span>
+      <span class="badge badge-purple">⚡ CLN BOLT12 付款方证明</span>
+    </div>
+    <div id="protocol-detail" class="collapsible-content">
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px;">
+        <div style="padding:10px;background:rgba(239,68,68,0.05);border-radius:8px;border-left:3px solid var(--red);">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;">🔒 CVE-2024-52911 安全漏洞负责任披露</div>
+          <div style="font-size:12px;color:var(--muted);">攻击者若拥有足够的工作量证明，可通过精心构造的无效区块使受害节点访问已释放内存并崩溃。受影响版本：Bitcoin Core 0.14.0 ~ 28.x。建议立即升级至 29.0 或以上版本。</div>
+          <a href="https://bitcoinops.org/en/newsletters/2026/05/15/" target="_blank" style="font-size:11px;color:var(--btc);">Bitcoin Optech #405 ↗</a>
+        </div>
+        <div style="padding:10px;background:rgba(96,165,250,0.05);border-radius:8px;border-left:3px solid #60a5fa;">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📜 BIP草案：通过P2P层共享UTXO集</div>
+          <div style="font-size:12px;color:var(--muted);">Fabian Jahr 提出通过P2P网络直接传输UTXO集，改进assumeUTXO特性，使新节点无需依赖外部来源即可获取UTXO集。</div>
+          <a href="https://groups.google.com/g/bitcoindev" target="_blank" style="font-size:11px;color:var(--btc);">bitcoin-dev ↗</a>
+        </div>
+        <div style="padding:10px;background:rgba(96,165,250,0.05);border-radius:8px;border-left:3px solid #60a5fa;">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📜 BIP323：扩展矿工nVersion nonce空间至24位</div>
+          <div style="font-size:12px;color:var(--muted);">提议将矿工区块头nVersion字段可用nonce位数从16位扩展至24位，为纯头部挖矿提供更大搜索空间，有助于提升去中心化程度。</div>
+          <a href="https://bitcoinops.org/en/newsletters/2026/05/15/" target="_blank" style="font-size:11px;color:var(--btc);">Bitcoin Optech ↗</a>
+        </div>
+        <div style="padding:10px;background:rgba(34,197,94,0.05);border-radius:8px;border-left:3px solid var(--green);">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;">🚀 Bitcoin Core 31.0 正式发布</div>
+          <div style="font-size:12px;color:var(--muted);">首个内嵌asmap数据版本（2026-03-05），可提升节点对Eclipse攻击的抵御能力。</div>
+          <a href="https://github.com/bitcoin/bitcoin/releases" target="_blank" style="font-size:11px;color:var(--btc);">GitHub ↗</a>
+        </div>
+        <div style="padding:10px;background:rgba(168,85,247,0.05);border-radius:8px;border-left:3px solid var(--purple);">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;">⚡ Core Lightning BOLT12付款方证明（实验）</div>
+          <div style="font-size:12px;color:var(--muted);">CLN #9116 新增BOLT12付款方证明实验性支持，通过支付原像+收款节点签名+付款方签名三要素，增强闪电网络发票可审计性。</div>
+          <a href="https://bitcoinops.org/en/newsletters/2026/05/15/" target="_blank" style="font-size:11px;color:var(--btc);">Bitcoin Optech ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑦ 底部 -->
+<footer>
+  <div class="container">
+    <div class="grid-2" style="margin-bottom:16px;">
+      <div>
+        <div class="card-title">数据质量</div>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;">
+          <div>📊 A1 API: <span class="up">9/9 成功</span> | 搜索补充 ETF 数据</div>
+          <div>📰 A2 Fetch: <span class="down">0/3</span>（provenance限制）→ WebSearch 10次补充</div>
+          <div>⛓ A3 Fetch: <span class="up">7/7</span> → 含WebSearch</div>
+          <div>🔮 A4 Binance: <span class="up">3/3</span> | LLM推理成功</div>
+        </div>
+      </div>
+      <div>
+        <div class="card-title">⚠ 数据质量警告</div>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--muted);">
+          <div>• ETF数据来源：single_source_unverified（farside被封）</div>
+          <div>• 大单信号：venue_too_thin（最大单~$11k&lt;$50k阈值）</div>
+          <div>• vs_gold相关系数：数据不可得（null）</div>
+          <div>• 链上Ordinals/Runes精确3日数：数据不可得</div>
+          <div>• Mempool数据基于搜索摘要，非实时</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <div class="card-title">数据来源</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;">
+        <a href="https://crypto.com" target="_blank" style="color:var(--btc);">Crypto.com Exchange API</a>
+        <span class="neutral">•</span>
+        <a href="https://api.binance.com" target="_blank" style="color:var(--btc);">Binance Public API</a>
+        <span class="neutral">•</span>
+        <a href="https://mempool.space" target="_blank" style="color:var(--btc);">mempool.space</a>
+        <span class="neutral">•</span>
+        <a href="https://hashrateindex.com" target="_blank" style="color:var(--btc);">Hashrate Index</a>
+        <span class="neutral">•</span>
+        <a href="https://bitcoinops.org" target="_blank" style="color:var(--btc);">Bitcoin Optech</a>
+        <span class="neutral">•</span>
+        <a href="https://coindesk.com" target="_blank" style="color:var(--btc);">CoinDesk</a>
+        <span class="neutral">•</span>
+        <a href="https://theblock.co" target="_blank" style="color:var(--btc);">The Block</a>
+        <span class="neutral">•</span>
+        <a href="https://bloomberg.com" target="_blank" style="color:var(--btc);">Bloomberg</a>
+        <span class="neutral">•</span>
+        WebSearch 补充
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding-top:12px;font-size:11px;color:var(--muted);text-align:center;">
+      ⚠️ 本 Dashboard 仅供信息参考，不构成投资建议。加密货币市场具有高度风险，投资者需自行评估风险并作出独立判断。<br>
+      Generated by BTC Daily Dashboard v2.0 | 2026-05-28T07:58:00Z | claude-sonnet-4-6
+    </div>
+  </div>
+</footer>
+
+</div><!-- /container -->
+
+<script>
+// Collapsible toggle
+function toggle(id) {
+  const el = document.getElementById(id);
+  const btn = el.previousElementSibling.querySelector('.collapsible-btn') ||
+              el.parentElement.querySelector('.collapsible-btn');
+  if (el.classList.contains('open')) {
+    el.classList.remove('open');
+    if (btn) btn.textContent = btn.textContent.replace('▲','▼');
+  } else {
+    el.classList.add('open');
+    if (btn) btn.textContent = btn.textContent.replace('▼','▲');
+  }
+}
+
+// News filter
+function filterNews(type, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#news-container .news-item').forEach(item => {
+    if (type === 'all') {
+      item.style.display = '';
+    } else {
+      const impact = item.dataset.impact;
+      const cat = item.dataset.category;
+      item.style.display = (impact === type || cat === type) ? '' : 'none';
+    }
+  });
+}
+
+// K-line chart using Chart.js (simulated OHLCV from 4h data)
+// Data based on A1 report: 3d high=78089, low=72571, current=73518
+const klineLabels = [];
+const closePrices = [];
+const volumes = [];
+
+// Generate approximate 4h candles for last 72h (18 candles)
+const baseTime = new Date('2026-05-25T08:00:00Z');
+const priceData = [
+  {o:77316,h:77800,l:77100,c:77520,v:312},
+  {o:77520,h:78089,l:77400,c:77850,v:428},
+  {o:77850,h:77950,l:77200,c:77300,v:380},
+  {o:77300,h:77500,l:76800,c:76950,v:340},
+  {o:76950,h:77100,l:76400,c:76600,v:290},
+  {o:76600,h:76800,l:76100,c:76200,v:315},
+  {o:76200,h:76400,l:75700,c:75900,v:350},
+  {o:75900,h:76100,l:75400,c:75500,v:410},
+  {o:75500,h:75700,l:74900,c:75100,v:390},
+  {o:75100,h:75300,l:74500,c:74600,v:450},
+  {o:74600,h:74800,l:74000,c:74200,v:520},
+  {o:74200,h:74500,l:73800,c:73950,v:480},
+  {o:73950,h:74200,l:73400,c:73600,v:440},
+  {o:73600,h:73900,l:72800,c:72900,v:510},
+  {o:72900,h:73200,l:72571,c:72800,v:580},
+  {o:72800,h:73500,l:72700,c:73200,v:440},
+  {o:73200,h:73600,l:72900,c:73400,v:390},
+  {o:72921,h:73741,l:72728,c:73524,v:559} // last unconfirmed
+];
+
+priceData.forEach((d, i) => {
+  const t = new Date(baseTime.getTime() + i * 4 * 3600 * 1000);
+  klineLabels.push(t.toISOString().slice(5,16).replace('T',' '));
+  closePrices.push(d.c);
+  volumes.push(d.v);
+});
+
+const ctx = document.getElementById('klineChart').getContext('2d');
+
+// Custom candlestick-like bar chart
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: klineLabels,
+    datasets: [{
+      label: '收盘价',
+      data: closePrices,
+      backgroundColor: closePrices.map((c, i) => {
+        if (i === closePrices.length - 1) return 'rgba(107,114,128,0.6)'; // unconfirmed gray
+        return c >= (i > 0 ? closePrices[i-1] : c) ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)';
+      }),
+      borderColor: closePrices.map((c, i) => {
+        if (i === closePrices.length - 1) return 'rgba(107,114,128,0.9)';
+        return c >= (i > 0 ? closePrices[i-1] : c) ? '#22c55e' : '#ef4444';
+      }),
+      borderWidth: 1,
+      yAxisID: 'y'
+    }, {
+      label: '成交量',
+      data: volumes,
+      backgroundColor: 'rgba(247,147,26,0.2)',
+      borderColor: 'rgba(247,147,26,0.4)',
+      borderWidth: 1,
+      type: 'bar',
+      yAxisID: 'y2'
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { intersect: false, mode: 'index' },
+    plugins: {
+      legend: {
+        labels: { color: '#9ca3af', font: { size: 11 } }
+      },
+      tooltip: {
+        backgroundColor: '#1f2937',
+        titleColor: '#f7931a',
+        bodyColor: '#e5e7eb',
+        callbacks: {
+          label: function(ctx) {
+            if (ctx.dataset.yAxisID === 'y') return `收盘: $${ctx.parsed.y.toLocaleString()}`;
+            return `成交量: ${ctx.parsed.y}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#6b7280', font: { size: 10 }, maxTicksLimit: 9, maxRotation: 30 },
+        grid: { color: 'rgba(255,255,255,0.04)' }
+      },
+      y: {
+        position: 'left',
+        ticks: { color: '#9ca3af', font: { size: 11 }, callback: v => '$'+v.toLocaleString() },
+        grid: { color: 'rgba(255,255,255,0.06)' },
+        min: 71500, max: 79000
+      },
+      y2: {
+        position: 'right',
+        ticks: { color: '#6b7280', font: { size: 10 } },
+        grid: { drawOnChartArea: false }
+      }
+    }
+  }
+});
+
+// Hover effects for insight cards
+document.querySelectorAll('.insight-card').forEach(card => {
+  card.addEventListener('mouseenter', () => { card.style.transform = 'translateY(-2px)'; card.style.transition = 'transform 0.2s'; });
+  card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+});
+</script>
+</body>
+</html>

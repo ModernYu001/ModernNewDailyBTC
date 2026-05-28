@@ -1,740 +1,666 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hans">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BTC 每日 Dashboard — 2026-05-23</title>
+<title>BTC 每日 Dashboard — 2026-05-24</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0a0a0a; color: #e5e7eb; font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans TC', sans-serif; font-size: 14px; }
-  .orange { color: #f7931a; }
-  .green { color: #22c55e; }
-  .red { color: #ef4444; }
-  .purple { color: #a855f7; }
-  .gray { color: #6b7280; }
-  .card { background: #111; border: 1px solid #222; border-radius: 10px; padding: 16px; }
-  .section-title { font-size: 16px; font-weight: 700; color: #f7931a; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 8px; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  * { box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    color: #e5e7eb;
+    font-family: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif;
+    margin: 0; padding: 0;
+  }
+  :root {
+    --btc: #f7931a;
+    --green: #22c55e;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --bg: #0a0a0a;
+    --card: #111111;
+    --border: #222222;
+  }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+  .btc-color { color: var(--btc); }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .purple { color: var(--purple); }
+  .section-title { color: var(--btc); font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 600; }
   .badge-high { background: #7f1d1d; color: #fca5a5; }
-  .badge-medium { background: #78350f; color: #fcd34d; }
-  .badge-low { background: #1e3a5f; color: #93c5fd; }
+  .badge-medium { background: #78350f; color: #fde68a; }
+  .badge-low { background: #1e3a2e; color: #86efac; }
   .badge-green { background: #14532d; color: #86efac; }
-  .badge-gray { background: #1f2937; color: #9ca3af; }
-  .badge-purple { background: #4c1d95; color: #c4b5fd; }
-  .signal-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-  .dot-green { background: #22c55e; }
-  .dot-red { background: #ef4444; }
-  .dot-yellow { background: #eab308; }
-  .dot-gray { background: #6b7280; }
-  .dot-purple { background: #a855f7; }
-  .progress-bar { background: #1f2937; border-radius: 4px; height: 8px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
-  details > summary { cursor: pointer; list-style: none; user-select: none; }
-  details > summary::-webkit-details-marker { display: none; }
-  .tab-btn { padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; border: 1px solid #333; background: #111; color: #9ca3af; transition: all 0.2s; }
-  .tab-btn.active { background: #f7931a; color: #000; border-color: #f7931a; }
-  .news-card { border-left: 3px solid; padding: 10px 12px; background: #0d0d0d; border-radius: 0 6px 6px 0; margin-bottom: 8px; }
-  .news-high { border-color: #ef4444; }
-  .news-medium { border-color: #eab308; }
-  .news-low { border-color: #3b82f6; }
-  .metric-card { background: #0d0d0d; border: 1px solid #1f2937; border-radius: 8px; padding: 12px; }
-  .chart-container { position: relative; height: 280px; }
-  .fallback-warn { background: #78350f; border: 1px solid #d97706; color: #fcd34d; padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 8px; }
-  .dq-btn { background: #1f2937; border: 1px solid #374151; color: #9ca3af; padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; }
-  @media (max-width:480px) { .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr!important; } }
-  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
-  .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-  @media (max-width:768px) { .grid-3,.grid-4 { grid-template-columns:1fr 1fr!important; } }
+  .badge-red { background: #7f1d1d; color: #fca5a5; }
+  .badge-purple { background: #4c1d95; color: #d8b4fe; }
+  .badge-neutral { background: #1f2937; color: #9ca3af; }
+  .badge-warning { background: #78350f; color: #fde68a; }
+  .light { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .light-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .light-red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .light-yellow { background: #eab308; box-shadow: 0 0 6px #eab308; }
+  .light-gray { background: #6b7280; }
+  .collapse-btn { cursor: pointer; color: #9ca3af; font-size: 0.8rem; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: transparent; }
+  .collapse-btn:hover { background: #1f2937; color: #e5e7eb; }
+  .collapsible { overflow: hidden; transition: max-height 0.3s ease; }
+  .stat-card { background: #0f0f0f; border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .regime-chip { border: 1px solid var(--btc); color: var(--btc); background: rgba(247,147,26,0.08); padding: 4px 12px; border-radius: 9999px; font-size: 0.8rem; }
+  .fallback-bar { background: #78350f; border: 1px solid #f59e0b; border-radius: 6px; padding: 6px 12px; color: #fde68a; font-size: 0.78rem; margin-bottom: 8px; }
+  .tab-btn { padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+  .tab-btn.active { background: var(--btc); color: #000; font-weight: 600; }
+  .tab-btn:not(.active) { background: #1a1a1a; color: #9ca3af; border-color: var(--border); }
+  .tab-btn:not(.active):hover { background: #222; color: #e5e7eb; }
+  .news-item { border-left: 3px solid var(--border); padding-left: 12px; margin-bottom: 16px; }
+  .news-item.high { border-color: var(--red); }
+  .news-item.medium { border-color: #f59e0b; }
+  .news-item.low { border-color: var(--green); }
+  .pred-card { border: 1px solid var(--purple); border-radius: 12px; padding: 16px; background: rgba(168,85,247,0.05); }
+  .source-text { font-size: 0.72rem; color: #6b7280; word-break: break-all; }
+  @media (max-width: 480px) {
+    .grid-2 { grid-template-columns: 1fr !important; }
+    .grid-3 { grid-template-columns: 1fr !important; }
+    .grid-4 { grid-template-columns: 1fr 1fr !important; }
+    h1 { font-size: 1.4rem !important; }
+  }
+  @media (min-width: 1280px) {
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .disclaimer { font-size: 0.72rem; color: #4b5563; text-align: center; padding: 16px; border-top: 1px solid var(--border); margin-top: 24px; }
 </style>
 </head>
 <body>
 
-<!-- ===== TOP SUMMARY ===== -->
-<div style="background:linear-gradient(135deg,#0f0f0f,#1a0a00);border-bottom:1px solid #222;padding:20px 24px;">
-  <div style="max-width:1400px;margin:0 auto;">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
-      <span style="font-size:24px;font-weight:900;color:#f7931a;">₿ BTC Daily Dashboard</span>
-      <span class="badge badge-gray" id="regime-badge">consolidating</span>
-      <span class="badge badge-green">2026-05-23</span>
-      <button class="dq-btn" onclick="document.getElementById('dq-panel').style.display=document.getElementById('dq-panel').style.display==='none'?'block':'none'">📊 数据质量</button>
+<!-- ① 顶部摘要 -->
+<div style="background: linear-gradient(135deg, #111 0%, #1a0f00 100%); border-bottom: 1px solid #f7931a33; padding: 20px 24px 16px;">
+  <div style="max-width: 1400px; margin: 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+      <div style="font-size:1.6rem; font-weight:900; color: var(--btc);">₿ BTC 每日 Dashboard</div>
+      <div class="regime-chip" id="regimeChip">macro_driven</div>
+      <div style="font-size:0.75rem; color:#6b7280; margin-left:auto;">生成时间：2026-05-24T00:00:00Z</div>
     </div>
-    <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-end;">
+    <div style="display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:10px;">
       <div>
-        <div style="font-size:11px;color:#6b7280;">BTC/USD 指数价格 (Crypto.com)</div>
-        <div style="font-size:36px;font-weight:900;color:#f7931a;">$75,721</div>
-        <div style="font-size:14px;" class="red">▼ -0.66% (24h)  ▼ -2.88% (3d)</div>
+        <span style="font-size:2.2rem; font-weight:900; color:#fff;">$76,695</span>
+        <span style="font-size:1rem; color: var(--green); margin-left:8px; font-weight:600;">▲ +1.16% / 24h</span>
       </div>
-      <div style="flex:1;min-width:220px;">
-        <div style="font-size:13px;color:#d1d5db;line-height:1.6;">
-          <strong style="color:#f7931a;">综合洞察：</strong>BTC在CLARITY法案参议院委员会通过及战略储备预期利好下获底部支撑，但技术面深度超买叠加量能萎缩，短期面临整盘压力，市场进入宏观消息驱动型横盘格局。
-        </div>
-      </div>
-      <div style="text-align:right;font-size:11px;color:#4b5563;">
-        <div>生成时间: 2026-05-23T19:15:00Z</div>
-        <div>数据窗口: 2026-05-20T19:12Z – 2026-05-23T19:12Z</div>
-        <div>来源: Crypto.com API · Binance API · mempool.space · WebSearch</div>
+      <div style="font-size:0.85rem; color:#9ca3af;">
+        指数价格：<span class="btc-color">$76,607</span> &nbsp;|&nbsp;
+        ETH：<span style="color:#a78bfa;">$2,102</span> (+1.25%) &nbsp;|&nbsp;
+        SOL：<span style="color:#38bdf8;">$85.34</span> (+0.58%)
       </div>
     </div>
-    <!-- Data Quality Panel -->
-    <div id="dq-panel" style="display:none;margin-top:12px;background:#0d0d0d;border:1px solid #333;border-radius:8px;padding:12px;font-size:12px;">
-      <div style="color:#f7931a;font-weight:700;margin-bottom:6px;">数据质量摘要</div>
-      <div class="grid-3" style="gap:8px;">
-        <div><span class="green">✓</span> Crypto.com API: 7/7 调用成功</div>
-        <div><span class="green">✓</span> Binance API: 3/3 成功</div>
-        <div><span class="green">✓</span> mempool.space: 4/4 成功</div>
-        <div><span class="yellow">⚠</span> ETF流量: 搜索补充 (single_source_unverified)</div>
-        <div><span class="yellow">⚠</span> 跨资产相关性: 搜索补充</div>
-        <div><span class="green">✓</span> 新闻: 3次搜索, 8条事件</div>
-      </div>
-      <div style="margin-top:8px;color:#6b7280;">缺失字段: ETF精确日度数据 · mempool.space web_fetch被限制(用bash curl替代) · hashrate 3d平均值</div>
+    <div style="font-size:1rem; color:#d1d5db; font-weight:500; padding: 8px 12px; background: rgba(247,147,26,0.08); border-radius:8px; border-left: 3px solid var(--btc);">
+      📰 特朗普伊朗和平协议推动BTC急涨至$77K，ETF周流出$12.6亿创新高，市场在宏观利好与机构减持间博弈
     </div>
   </div>
 </div>
 
-<div style="max-width:1400px;margin:0 auto;padding:16px 24px;">
-
-<!-- ===== INTEGRATION INSIGHTS ===== -->
-<div class="card" style="margin-bottom:16px;">
+<!-- ② 整合洞察 -->
+<div style="max-width:1400px; margin:0 auto; padding: 16px 24px;">
   <div class="section-title">🔍 整合洞察</div>
-  <div class="grid-2" style="gap:16px;margin-bottom:16px;">
-    <!-- Key Insights -->
-    <div>
-      <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">关键洞察</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div class="metric-card" style="border-left:3px solid #22c55e;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <span style="font-size:12px;font-weight:700;">CLARITY法案 & 战略储备双重催化</span>
-            <span class="badge badge-green">高信心</span>
-          </div>
-          <div style="font-size:11px;color:#9ca3af;">参议院银行委员会5月14日15-9通过CLARITY法案，战略储备持有~328,000 BTC；Patrick Witt宣布数周内将有重大公告。结合Agent 2高影响新闻，属宏观结构性利好。</div>
-          <div style="font-size:10px;color:#6b7280;margin-top:4px;">支持来源: Agent 2 (news) · Agent 1 (macro)</div>
+
+  <!-- 5灯讯号 -->
+  <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+    <div class="stat-card" style="flex:1; min-width:140px;">
+      <div style="font-size:0.75rem; color:#9ca3af; margin-bottom:4px;">Taker 流量</div>
+      <div><span class="light light-red"></span><span style="font-size:0.85rem;">卖方主导 (0.72)</span></div>
+    </div>
+    <div class="stat-card" style="flex:1; min-width:140px;">
+      <div style="font-size:0.75rem; color:#9ca3af; margin-bottom:4px;">基差讯号</div>
+      <div><span class="light light-gray"></span><span style="font-size:0.85rem;">中性 (-0.001%)</span></div>
+    </div>
+    <div class="stat-card" style="flex:1; min-width:140px;">
+      <div style="font-size:0.75rem; color:#9ca3af; margin-bottom:4px;">深度比率</div>
+      <div><span class="light light-gray"></span><span style="font-size:0.85rem;">均衡 (0.77)</span></div>
+    </div>
+    <div class="stat-card" style="flex:1; min-width:140px;">
+      <div style="font-size:0.75rem; color:#9ca3af; margin-bottom:4px;">ETF 资金流</div>
+      <div><span class="light light-red"></span><span style="font-size:0.85rem;">周流出 $12.6亿</span></div>
+    </div>
+    <div class="stat-card" style="flex:1; min-width:140px;">
+      <div style="font-size:0.75rem; color:#9ca3af; margin-bottom:4px;">预测方向</div>
+      <div><span class="light light-gray"></span><span style="font-size:0.85rem;">中性偏空 (45%)</span></div>
+    </div>
+  </div>
+
+  <!-- 关键洞察卡 -->
+  <div class="grid-2" style="margin-bottom:16px;">
+    <div class="card" style="padding:14px;">
+      <div style="font-size:0.78rem; color: var(--btc); font-weight:600; margin-bottom:6px;">💡 宏观催化 vs 机构减持</div>
+      <div style="font-size:0.83rem; color:#d1d5db;">特朗普美伊和平协议推动 BTC 单日暴涨 4.2% 至 $77,303，但 ETF 本周净流出 $12.6 亿（今年最大），两股力量形成对冲，确信度：<span class="badge badge-medium">中</span></div>
+      <div style="font-size:0.72rem; color:#6b7280; margin-top:4px;">agents: A1, A2</div>
+    </div>
+    <div class="card" style="padding:14px;">
+      <div style="font-size:0.78rem; color: var(--btc); font-weight:600; margin-bottom:6px;">⚡ 监管多重利好齐发</div>
+      <div style="font-size:0.83rem; color:#d1d5db;">亲加密 Fed 主席沃什就任、SEC 批准 QBTC 期权、ARMA 法案推进 100 万 BTC 储备立法，中长期结构性利好，确信度：<span class="badge badge-green">高</span></div>
+      <div style="font-size:0.72rem; color:#6b7280; margin-top:4px;">agents: A2</div>
+    </div>
+    <div class="card" style="padding:14px;">
+      <div style="font-size:0.78rem; color: var(--btc); font-weight:600; margin-bottom:6px;">📉 技术面量能萎缩</div>
+      <div style="font-size:0.83rem; color:#d1d5db;">1h vol_ratio 仅 0.23，成交量极度萎缩，MACD 1h 连续负柱 5 根，方向突破前缺乏动能，15m/1h 指标存在短期分歧，确信度：<span class="badge badge-medium">中</span></div>
+      <div style="font-size:0.72rem; color:#6b7280; margin-top:4px;">agents: A1, A4</div>
+    </div>
+    <div class="card" style="padding:14px;">
+      <div style="font-size:0.78rem; color: var(--btc); font-weight:600; margin-bottom:6px;">⛏️ 矿工承压转型</div>
+      <div style="font-size:0.83rem; color:#d1d5db;">算力 963 EH/s 温和回升，费率极低（1 sat/vB），矿工生产成本远超现价，持续转向 AI 算力，中期出售压力存在，确信度：<span class="badge badge-medium">中</span></div>
+      <div style="font-size:0.72rem; color:#6b7280; margin-top:4px;">agents: A1, A3</div>
+    </div>
+  </div>
+
+  <!-- prediction_alignment -->
+  <div class="card" style="padding:14px; margin-bottom:16px; border-color: var(--purple);">
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <div style="font-size:0.78rem; color: var(--purple); font-weight:600;">🔮 预测对齐</div>
+      <div class="badge badge-neutral">中性</div>
+      <div style="font-size:0.82rem; color:#9ca3af;">A4 预测方向中性（preferred_direction=neutral），与 A1 卖方主导 taker 和 ETF 资金流出一致，宏观利好（A2）提供下方支撑但短期技术面无上升动能</div>
+    </div>
+  </div>
+
+  <!-- 观察清单 -->
+  <div class="card" style="padding:14px;">
+    <div style="font-size:0.78rem; color: var(--btc); font-weight:600; margin-bottom:8px;">👀 观察清单</div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+      <span class="badge badge-warning">$77,100 突破确认</span>
+      <span class="badge badge-warning">ETF 资金流转正</span>
+      <span class="badge badge-warning">1h MACD 金叉</span>
+      <span class="badge badge-warning">6/17 FOMC 利率决议</span>
+      <span class="badge badge-warning">ARMA 法案进展</span>
+      <span class="badge badge-warning">Strategy 潜在 BTC 出售</span>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 市场区 -->
+<div style="max-width:1400px; margin:0 auto; padding: 0 24px 16px;">
+  <div class="section-title">📊 市场数据</div>
+  <div class="grid-4" style="margin-bottom:16px;">
+    <div class="stat-card">
+      <div style="font-size:0.72rem; color:#9ca3af;">现货（指数）</div>
+      <div style="font-size:1.4rem; font-weight:800; color:#fff;">$76,607</div>
+      <div style="font-size:0.78rem;" class="green">▲ +1.16% 24h</div>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:0.72rem; color:#9ca3af;">3日最高 / 最低</div>
+      <div style="font-size:1rem; font-weight:700; color: var(--green);">$77,909</div>
+      <div style="font-size:1rem; font-weight:700; color: var(--red);">$74,257</div>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:0.72rem; color:#9ca3af;">永续基差</div>
+      <div style="font-size:1.1rem; font-weight:700; color:#9ca3af;">-0.001%</div>
+      <div><span class="badge badge-neutral">neutral</span></div>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:0.72rem; color:#9ca3af;">深度比率 (bid/ask)</div>
+      <div style="font-size:1.1rem; font-weight:700; color:#9ca3af;">0.771</div>
+      <div><span class="badge badge-neutral">balanced</span></div>
+    </div>
+  </div>
+
+  <!-- Taker + 跨资产 -->
+  <div class="grid-2" style="margin-bottom:16px;">
+    <div class="card" style="padding:14px;">
+      <div style="font-size:0.85rem; font-weight:600; margin-bottom:10px; color: var(--btc);">Taker 流量（最近150笔）</div>
+      <div style="display:flex; gap:16px;">
+        <div>
+          <div style="font-size:0.72rem; color:#9ca3af;">买方成交量</div>
+          <div style="font-size:1.1rem; font-weight:700; color: var(--green);">1.247 BTC</div>
         </div>
-        <div class="metric-card" style="border-left:3px solid #eab308;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <span style="font-size:12px;font-weight:700;">技术超买 + 量能极度萎缩</span>
-            <span class="badge badge-medium">中信心</span>
-          </div>
-          <div style="font-size:11px;color:#9ca3af;">1h RSI=89，15m RSI=80，vol_ratio=0.15；BB无突破确认；当前位于BB上轨下方，短期回调风险高。</div>
-          <div style="font-size:10px;color:#6b7280;margin-top:4px;">支持来源: Agent 4 (predictor) · Agent 1 (market)</div>
+        <div>
+          <div style="font-size:0.72rem; color:#9ca3af;">卖方成交量</div>
+          <div style="font-size:1.1rem; font-weight:700; color: var(--red);">1.741 BTC</div>
         </div>
-        <div class="metric-card" style="border-left:3px solid #a855f7;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <span style="font-size:12px;font-weight:700;">ETF资金面分化，近期净流出压制</span>
-            <span class="badge badge-medium">中信心</span>
-          </div>
-          <div style="font-size:11px;color:#9ca3af;">5月13日单日流出-$635M（历史最大），CPI=3.8%推后降息预期。月初强流入($532M/日)与中期大流出形成矛盾，近端压力仍存。</div>
-          <div style="font-size:10px;color:#6b7280;margin-top:4px;">支持来源: Agent 1 (etf) · Agent 2 (macro)</div>
+        <div>
+          <div style="font-size:0.72rem; color:#9ca3af;">比率</div>
+          <div style="font-size:1.1rem; font-weight:700; color: var(--red);">0.716</div>
         </div>
-        <div class="metric-card" style="border-left:3px solid #6b7280;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <span style="font-size:12px;font-weight:700;">链上网络健康，矿工收入压缩</span>
-            <span class="badge badge-gray">低信心</span>
-          </div>
-          <div style="font-size:11px;color:#9ca3af;">Hashrate ~1.05 ZH/s健康，mempool费率仅1 sat/vB极低，难度调整-0.014%轻微下调预期，闪电网络容量>5,600 BTC创新高。</div>
-          <div style="font-size:10px;color:#6b7280;margin-top:4px;">支持来源: Agent 3 (tech)</div>
+      </div>
+      <div style="margin-top:8px;"><span class="badge badge-red">seller_aggressive</span></div>
+      <div style="margin-top:6px; font-size:0.72rem; color:#6b7280;">大单侦测：场地流动性过低 (venue_too_thin)</div>
+    </div>
+    <div class="card" style="padding:14px;">
+      <div style="font-size:0.85rem; font-weight:600; margin-bottom:10px; color: var(--btc);">跨资产相关性（30日）</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:0.82rem;">BTC / SPX</span>
+          <span class="badge badge-green">正相关 r≈0.70</span>
+          <span style="font-size:0.72rem; color:#9ca3af;">风险资产同步</span>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:0.82rem;">BTC / 黄金</span>
+          <span class="badge badge-green">正相关 r≈0.45</span>
+          <span style="font-size:0.72rem; color:#9ca3af;">中度数字黄金属性</span>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:0.82rem;">BTC / DXY</span>
+          <span class="badge badge-red">负相关 r≈-0.72</span>
+          <span style="font-size:0.72rem; color:#9ca3af;">美元强则BTC弱</span>
         </div>
       </div>
     </div>
-    <!-- Signal Alignment + Prediction Alignment -->
-    <div>
-      <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">信号对齐 (5灯)</div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
-        <div class="metric-card" style="display:flex;align-items:center;gap:10px;">
-          <span class="signal-dot dot-yellow"></span>
-          <div><div style="font-size:12px;font-weight:600;">现货 vs 永续</div><div style="font-size:11px;color:#9ca3af;">Basis=-0.005%(neutral)，价差一致，无方向性分歧</div></div>
-        </div>
-        <div class="metric-card" style="display:flex;align-items:center;gap:10px;">
-          <span class="signal-dot dot-yellow"></span>
-          <div><div style="font-size:12px;font-weight:600;">Taker + Basis + 深度</div><div style="font-size:11px;color:#9ca3af;">Taker balanced(0.995) + basis neutral + depth buy_support(2.53) — 三向不完全同向，买盘在盘口有支撑但主动买入力度弱</div></div>
-        </div>
-        <div class="metric-card" style="display:flex;align-items:center;gap:10px;">
-          <span class="signal-dot dot-red"></span>
-          <div><div style="font-size:12px;font-weight:600;">ETF vs 链上</div><div style="font-size:11px;color:#9ca3af;">ETF近期净流出 vs 链上矿工中性，方向背离；机构资金面有压力</div></div>
-        </div>
-        <div class="metric-card" style="display:flex;align-items:center;gap:10px;">
-          <span class="signal-dot dot-yellow"></span>
-          <div><div style="font-size:12px;font-weight:600;">消息面 vs 价格</div><div style="font-size:11px;color:#9ca3af;">多条高影响利好(CLARITY/战略储备)但价格仍在$75K区间，正面消息未被充分定价</div></div>
-        </div>
-        <div class="metric-card" style="display:flex;align-items:center;gap:10px;">
-          <span class="signal-dot dot-green"></span>
-          <div><div style="font-size:12px;font-weight:600;">当前价 vs 预测区间</div><div style="font-size:11px;color:#9ca3af;">现价$75,818在1h预测区间[$75,519–$76,117]中间位，Agent4区间有效覆盖当前关键位</div></div>
-        </div>
+  </div>
+
+  <!-- ETF 资金流 -->
+  <div class="card" style="padding:14px; margin-bottom:16px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+      <div style="font-size:0.85rem; font-weight:600; color: var(--btc);">📈 ETF 资金流</div>
+      <span class="badge badge-warning">single_source_unverified</span>
+    </div>
+    <div class="fallback-bar">⚠️ farside.co.uk 无法抓取，ETF 数据来源 Web Search，标记为 single_source_unverified</div>
+    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+      <div class="stat-card" style="flex:1; min-width:120px;">
+        <div style="font-size:0.72rem; color:#9ca3af;">2026-05-22</div>
+        <div style="font-size:1rem; font-weight:700; color: var(--red);">-$105.2M</div>
+        <div style="font-size:0.72rem; color:#9ca3af;">IBIT:-$68.9M FBTC:-$36.3M</div>
       </div>
-      <!-- Prediction Alignment Card -->
-      <div class="metric-card" style="border:1px solid #4c1d95;">
-        <div style="font-size:12px;font-weight:700;color:#a855f7;margin-bottom:6px;">预测对齐评估</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-          <span class="badge badge-purple">Agent4方向: 中性偏多(up)</span>
-          <span class="badge badge-gray">Agent1情绪: 平衡(taker=0.995)</span>
-          <span class="badge badge-green">对齐: weak_confirm</span>
-        </div>
-        <div style="font-size:11px;color:#9ca3af;">Agent4 rule engine preferred_direction=up与Agent1 taker balanced弱对齐；depth buy_support(2.53)为多头提供额外支撑。1h预测高点$76,117低于3D阻力$76,411，区间设置合理。</div>
+      <div class="stat-card" style="flex:1; min-width:120px;">
+        <div style="font-size:0.72rem; color:#9ca3af;">本周累计（5天）</div>
+        <div style="font-size:1rem; font-weight:700; color: var(--red);">-$1,260M</div>
+        <div style="font-size:0.72rem; color:#9ca3af;">今年最大周流出</div>
       </div>
-      <!-- Watch List -->
-      <div style="margin-top:12px;">
-        <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">⚠ 关注清单</div>
-        <div style="font-size:11px;color:#9ca3af;display:flex;flex-direction:column;gap:4px;">
-          <div>• <span class="orange">$76,124</span> — 1h BB上轨，有效突破需vol_ratio&gt;1.5</div>
-          <div>• <span class="red">$75,000</span> — 心理整数关口，跌破引发连锁止损</div>
-          <div>• <span class="orange">CLARITY Act参议院全体投票</span> — 时间窗未定，消息触发性风险</div>
-          <div>• <span class="orange">Fed降息时间表</span> — CPI=3.8%推后宽松，美元强势压制BTC</div>
+      <div class="stat-card" style="flex:1; min-width:120px;">
+        <div style="font-size:0.72rem; color:#9ca3af;">IBIT 周流出</div>
+        <div style="font-size:1rem; font-weight:700; color: var(--red);">-$1,150M</div>
+        <div style="font-size:0.72rem; color:#9ca3af;">占总流出 ~75%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 关键价位 -->
+  <div class="card" style="padding:14px;">
+    <div style="font-size:0.85rem; font-weight:600; margin-bottom:10px; color: var(--btc);">🎯 关键价位</div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+      <span class="badge" style="background:#1e3a5f; color:#93c5fd;">压力 $77,543</span>
+      <span class="badge" style="background:#1e3a5f; color:#93c5fd;">压力 $77,265 (BB上轨)</span>
+      <span class="badge" style="background:#1e3a5f; color:#93c5fd;">心理 $77,000</span>
+      <span class="badge" style="background:#1a1a1a; color:#9ca3af;">现价 $76,677 ▶</span>
+      <span class="badge" style="background:#3a1f1f; color:#fca5a5;">支撑 $76,396 (BB下轨)</span>
+      <span class="badge" style="background:#3a1f1f; color:#fca5a5;">支撑 $76,108 (SMA50)</span>
+      <span class="badge" style="background:#3a1f1f; color:#fca5a5;">支撑 $75,000</span>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 预测区（紫色）-->
+<div style="max-width:1400px; margin:0 auto; padding: 0 24px 16px;">
+  <div class="section-title" style="color: var(--purple);">🔮 短周期预测（Agent 4）</div>
+  <div style="font-size:0.78rem; color:#6b7280; margin-bottom:12px;">模型：claude-sonnet-4-6-subagent ｜ 置信度：<span class="badge badge-neutral">medium</span> ｜ 方向：<span class="badge badge-neutral">neutral</span></div>
+
+  <div class="grid-3" style="margin-bottom:16px;">
+    <div class="pred-card">
+      <div style="font-size:0.9rem; font-weight:700; color: var(--purple); margin-bottom:8px;">⏱ 1小时预测</div>
+      <div style="font-size:0.78rem; color:#9ca3af;">价格区间</div>
+      <div style="font-size:1.2rem; font-weight:700; color:#fff; margin-bottom:4px;">$76,354 — $77,000</div>
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <div style="background:#1a1a2e; border-radius:4px; height:8px; flex:1; overflow:hidden;">
+          <div style="background: var(--purple); height:100%; width:43%;"></div>
         </div>
+        <span style="font-size:0.82rem; color: var(--purple); font-weight:600;">↑ 43%</span>
+      </div>
+      <div style="font-size:0.72rem; color: var(--green);">做多：收盘 > $77,265 + MACD hist 转正</div>
+      <div style="font-size:0.72rem; color: var(--red);">做空：跌破 $76,396 + 量能放大</div>
+    </div>
+    <div class="pred-card">
+      <div style="font-size:0.9rem; font-weight:700; color: var(--purple); margin-bottom:8px;">⏰ 4小时预测</div>
+      <div style="font-size:0.78rem; color:#9ca3af;">价格区间</div>
+      <div style="font-size:1.2rem; font-weight:700; color:#fff; margin-bottom:4px;">$76,096 — $77,258</div>
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <div style="background:#1a1a2e; border-radius:4px; height:8px; flex:1; overflow:hidden;">
+          <div style="background: var(--purple); height:100%; width:42%;"></div>
+        </div>
+        <span style="font-size:0.82rem; color: var(--purple); font-weight:600;">↑ 42%</span>
+      </div>
+      <div style="font-size:0.72rem; color: var(--green);">做多：连续收盘 > $76,877（≥2根）</div>
+      <div style="font-size:0.72rem; color: var(--red);">做空：跌破 SMA50 $76,108 + vol_ratio > 1.3</div>
+    </div>
+    <div class="pred-card">
+      <div style="font-size:0.9rem; font-weight:700; color: var(--purple); margin-bottom:8px;">📅 日线预测（24h）</div>
+      <div style="font-size:0.78rem; color:#9ca3af;">价格区间</div>
+      <div style="font-size:1.2rem; font-weight:700; color:#fff; margin-bottom:4px;">$75,548 — $77,806</div>
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <div style="background:#1a1a2e; border-radius:4px; height:8px; flex:1; overflow:hidden;">
+          <div style="background: var(--purple); height:100%; width:45%;"></div>
+        </div>
+        <span style="font-size:0.82rem; color: var(--purple); font-weight:600;">↑ 45%</span>
+      </div>
+      <div style="font-size:0.72rem; color: var(--green);">做多：收复 $77,100 + MACD 金叉 + RSI > 60</div>
+      <div style="font-size:0.72rem; color: var(--red);">做空：日线跌破 $76,000 + RSI < 40</div>
+    </div>
+  </div>
+
+  <!-- 7段折叠 -->
+  <div class="card" style="padding:14px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+      <div style="font-size:0.85rem; font-weight:600; color: var(--purple);">📋 预测分析（7段详述）</div>
+      <button class="collapse-btn" onclick="toggleSection('pred7')">展开 7 段 ▼</button>
+    </div>
+    <div id="pred7" class="collapsible" style="max-height:0;">
+      <div style="padding-top:12px; display:flex; flex-direction:column; gap:14px; font-size:0.83rem; color:#d1d5db; line-height:1.6;">
+        <div><strong style="color: var(--purple);">## 段1：市场总览</strong><br>
+        推理：综合 15m 与 1h 指标，市场处于横盘整理偏空状态。15m RSI 48.36 略低于中性线；1h RSI 51.74 接近中性但偏强。15m MACD hist 连续 +6 柱但 1h MACD hist 连续 -5 柱，两者分歧显著。BB 带宽均窄，成交量大幅萎缩（1h vol_ratio 0.23）。<br>
+        结论：当前市场结构偏中性偏空，短周期动能略有修复但大趋势方向不明确，正处于横盘整理且成交量持续萎缩，市场在等待新的催化因素出现。</div>
+        <div><strong style="color: var(--purple);">## 段2：15分钟技术分析</strong><br>
+        推理：RSI 48.36 略低于 50；MACD 虽 hist 连续正柱 6 根，但 macd_line 仍为 -49.30，仅是从深度负值回升，尚未金叉。BB 中轨 76,593，收盘 76,677 略高于中轨。ATR 149。成交量 vol_ratio 0.33，最近 5 根下跌量 (134.55) 大于上涨量 (81.23)，反弹动力不足。<br>
+        结论：15m 超短线呈弱反弹格局，MACD 出现底部背离但尚未确认，在成交量不足的情况下向上突破动力存疑，偏向维持震荡格局。</div>
+        <div><strong style="color: var(--purple);">## 段3：1小时技术分析</strong><br>
+        推理：RSI 51.74 中性；MACD line(+122.42) > 0 但 signal(+193.79) > line，hist 连续 -5 柱，说明短线动能向下但 MACD 线仍在正值。BB 当前价 76,677 位于中轨 76,831 之下，距下轨 76,396 尚有 280 点缓冲。成交量极度萎缩（vol_ratio 0.23），最后 5 根 1h K 下跌量 (1311.79) 远超上涨量 (608.77)。<br>
+        结论：1h 短线方向偏空但不强烈，市场在 SMA50 以上震荡，MACD 动能逐渐消耗，若无成交量配合难以有效突破上方压力。</div>
+        <div><strong style="color: var(--purple);">## 段4：1小时预测（未来1h）</strong><br>
+        推理：基于 1h ATR 322.61，1h 预测范围取 ±1.0x ATR。上方有 BB 上轨 77,265 和 range_high 77,543；下方 BB 下轨 76,396 和 SMA50 76,108。MACD 连续负柱且成交量萎缩，概率修正后 0.43。<br>
+        结论：价格区间：$76,354 — $77,000 ｜上行概率：43% ｜做多触发：收盘突破 $77,265 + MACD hist 转正 + RSI > 55 ｜做空触发：跌破 $76,396 + 成交量放大 + RSI < 45</div>
+        <div><strong style="color: var(--purple);">## 段5：4小时预测（未来4h）</strong><br>
+        推理：4h 视野使用 ATR x1.8 计算区间。1h MACD 仍在衰减，成交量持续萎缩。上方压力 77,543；下方支撑 SMA50 76,108，跌破则扩大至 76,000-75,500。概率 0.42。<br>
+        结论：价格区间：$76,096 — $77,258 ｜上行概率：42% ｜做多触发：1h 连续收盘 > $76,877（≥2根）+ MACD hist 转正 ｜做空触发：跌破 SMA50 $76,108 + vol_ratio > 1.3 + MACD 负柱 > 5</div>
+        <div><strong style="color: var(--purple);">## 段6：日线预测（未来24h）</strong><br>
+        推理：24h 时间框架使用 ATR x3.5 计算范围。从大格局看，1h 120根最高 78,200 为强压力，最低 74,290 为强支撑，当前价 76,677 处于此区间中段偏低位置。若突破 77,000-77,265 有机会测试 77,543 甚至 78,200；跌破 76,000 则可能下探 75,000-75,548。<br>
+        结论：价格区间：$75,548 — $77,806 ｜上行概率：45% ｜做多触发：收复 $77,100 站稳 + MACD 日线金叉 + RSI > 60 ｜做空触发：跌破 $76,000 日线确认 + RSI < 40 + 成交量扩张</div>
+        <div><strong style="color: var(--purple);">## 段7：风险提示</strong><br>
+        推理：最大不确定性：①成交量极度萎缩（vol_ratio 0.23）可能突然出现方向选择；②15m/1h MACD 分歧，短周期回升能否延伸不确定；③缺乏 SMA200 数据无法判断更大级别趋势。<br>
+        结论：①量能萎缩期的假突破风险——需严格等待放量确认；②15m vs 1h MACD 背离冲突，建议缩小仓位；③市场可能在 $76,000 支撑和 $77,543 压力之间快速来回测试。</div>
+        <div style="color:#6b7280; font-size:0.72rem;">（非投资建议）</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ===== MARKET SECTION (AGENT 1) ===== -->
-<div class="card" style="margin-bottom:16px;">
-  <div class="section-title">📊 市场分析 (Agent 1 · Crypto.com)</div>
-  <div class="grid-2" style="gap:16px;">
-    <!-- Left: 4H Chart -->
-    <div>
-      <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">BTC/USDT 4小时 K线 (最近21根)</div>
-      <div class="chart-container">
-        <canvas id="klineChart"></canvas>
+<!-- ⑤ 新闻时间轴 -->
+<div style="max-width:1400px; margin:0 auto; padding: 0 24px 16px;">
+  <div class="section-title">📰 新闻政策（T-72h 内）</div>
+  <div style="font-size:0.78rem; color:#9ca3af; margin-bottom:12px;">共 12 则 ｜ 高影响 5 ｜ 中影响 6 ｜ 低影响 1 ｜ 已丢弃 8</div>
+
+  <!-- Tab 筛选 -->
+  <div style="display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap;" id="newsTabs">
+    <button class="tab-btn active" onclick="filterNews('all', this)">全部 (12)</button>
+    <button class="tab-btn" onclick="filterNews('high', this)">高影响 (5)</button>
+    <button class="tab-btn" onclick="filterNews('medium', this)">中影响 (6)</button>
+    <button class="tab-btn" onclick="filterNews('low', this)">低影响 (1)</button>
+    <button class="tab-btn" onclick="filterNews('regulatory', this)">监管</button>
+    <button class="tab-btn" onclick="filterNews('macro', this)">宏观</button>
+    <button class="tab-btn" onclick="filterNews('institutional', this)">机构</button>
+  </div>
+
+  <div id="newsContainer">
+    <div class="news-item high" data-impact="high" data-category="macro">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">特朗普宣布美伊和平协议接近达成，比特币急涨至 $77,303</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-high">高影响</span><span class="badge badge-neutral">宏观</span></div>
       </div>
-      <div style="font-size:10px;color:#6b7280;margin-top:4px;">虚线标注: 当前未确认K线 (开盘 2026-05-23T16:00Z，仍在进行中)</div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-23 ｜ CoinDesk, CryptoBriefing, CryptoNews</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">特朗普在 Truth Social 宣布美伊和平协议“已大致完成谈判”，霍尔木兹海峡将重新开放。比特币从日低 $74,192 急涨至 $77,303（涨幅 ~4.2%），地缘政治风险溢价消退为主要驱动力。</div>
     </div>
-    <!-- Right: Metrics -->
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <!-- Price Summary -->
-      <div class="metric-card">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:6px;">价格摘要 (Crypto.com · 2026-05-23T19:12Z)</div>
-        <div class="grid-2" style="gap:8px;">
-          <div><div class="gray" style="font-size:10px;">现价 (现货)</div><div class="orange" style="font-size:18px;font-weight:700;">$75,799</div></div>
-          <div><div class="gray" style="font-size:10px;">指数价格</div><div style="font-size:18px;font-weight:700;">$75,721</div></div>
-          <div><div class="gray" style="font-size:10px;">24h涨跌</div><div class="red">▼ -0.66%</div></div>
-          <div><div class="gray" style="font-size:10px;">3日涨跌</div><div class="red">▼ -2.88%</div></div>
-          <div><div class="gray" style="font-size:10px;">24h高/低</div><div style="font-size:12px;"><span class="green">$76,411</span> / <span class="red">$74,257</span></div></div>
-          <div><div class="gray" style="font-size:10px;">3日高/低 (已收)</div><div style="font-size:12px;"><span class="green">$78,216</span> / <span class="red">$74,257</span></div></div>
-          <div><div class="gray" style="font-size:10px;">24h成交量</div><div>2,776 BTC / $209M</div></div>
-          <div><div class="gray" style="font-size:10px;">点差</div><div>~0.001 bps</div></div>
-        </div>
+
+    <div class="news-item high" data-impact="high" data-category="macro">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">亲加密联准会主席凯文·沃什于比特币披萨日宣誓就任</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-high">高影响</span><span class="badge badge-neutral">宏观</span></div>
       </div>
-      <!-- Basis / Depth / Taker -->
-      <div class="grid-3" style="gap:8px;">
-        <div class="metric-card" style="text-align:center;">
-          <div style="font-size:10px;color:#6b7280;">永续基差</div>
-          <div style="font-size:16px;font-weight:700;color:#22c55e;">-0.005%</div>
-          <div style="font-size:10px;" class="gray">neutral</div>
-          <div style="font-size:10px;color:#4b5563;">OI: 6,266 BTC<br>$474M</div>
-        </div>
-        <div class="metric-card" style="text-align:center;">
-          <div style="font-size:10px;color:#6b7280;">盘口深度比</div>
-          <div style="font-size:16px;font-weight:700;color:#22c55e;">2.53</div>
-          <div style="font-size:10px;" class="green">buy_support</div>
-          <div style="font-size:10px;color:#4b5563;">买:3.14 / 卖:1.24 BTC</div>
-        </div>
-        <div class="metric-card" style="text-align:center;">
-          <div style="font-size:10px;color:#6b7280;">Taker比率</div>
-          <div style="font-size:16px;font-weight:700;color:#eab308;">0.995</div>
-          <div style="font-size:10px;" class="gray">balanced</div>
-          <div style="font-size:10px;color:#4b5563;">买:1.50/卖:1.51 BTC</div>
-        </div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-22 ｜ WashPost, CNBC, CryptoBriefing</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">凯文·沃什宣誓就任第17任联准会主席，以54:45票通过参议院确认。沃什持有逾30种加密资产，包括直接投资现货比特币ETF，市场等待 6 月 17 日首次 FOMC 会议。</div>
+    </div>
+
+    <div class="news-item high" data-impact="high" data-category="regulatory">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">ARMA 法案提出：跨党派立法拟将美国比特币战略储备法制化并锁定20年</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-high">高影响</span><span class="badge badge-purple">监管</span></div>
       </div>
-      <!-- Large trades -->
-      <div class="metric-card">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">大单流向 (阈值$10k，自适应降级)</div>
-        <div style="font-size:11px;">买单: 4笔 $44,435 · 卖单: 3笔 $54,682 · 比率: 0.81 <span class="badge badge-gray">balanced</span></div>
-        <div style="font-size:10px;color:#eab308;margin-top:3px;">⚠ 原始阈值$100k/$50k样本不足，已降至$10k</div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-21 ｜ TheBlock, Decrypt, Begich.House.Gov</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">《美国储备现代化法案》拟要求财政部5年内每年收购最多20万枚BTC，总目标100万BTC，资金来源为黄金重估，持有期最少20年，并要求每季公开“储备证明”报告。</div>
+    </div>
+
+    <div class="news-item high" data-impact="high" data-category="regulatory">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">SEC 批准那斯达克在 PHLX 挂牌比特币指数期权（QBTC）</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-high">高影响</span><span class="badge badge-purple">监管</span></div>
       </div>
-      <!-- Key Levels -->
-      <div class="metric-card">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:6px;">关键价位</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <div><div style="font-size:10px;color:#22c55e;">支撑</div>
-            <div style="font-size:11px;">$75,000 (心理) · $74,337 (3D低点集群) · $73,500 (心理)</div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-22 ｜ Bloomberg, CryptoBriefing</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">SEC 批准 QBTC 现金结算比特币指数期权在费城交易所挂牌，标的为 CME CF 比特币实时指数，欧式结算。为继 IBIT 期权后又一重要加密衍生品扩张，实际交易尚待 CFTC 豁免。</div>
+    </div>
+
+    <div class="news-item high" data-impact="high" data-category="institutional">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">现货比特币 ETF 单周净流出 $12.6 亿，为今年 1 月底以来最大</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-high">高影响</span><span class="badge badge-neutral">机构</span></div>
+      </div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-23 ｜ TheBlock, CoinPedia, Investing.com</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">连续 6 个交易日净流出，IBIT 在4个交易日内独占 $11.5 亿（~75%）。分析师警告显示机构需求出现结构性减弱。</div>
+    </div>
+
+    <div class="news-item medium" data-impact="medium" data-category="institutional">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">川普媒体将 $2.05 亿比特币转至 Crypto.com，帐面浮亏达 $4.55 亿</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-medium">中影响</span><span class="badge badge-neutral">机构</span></div>
+      </div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-22 ｜ CoinDesk, CryptoTimes</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">TMTG 将 2,650 枚BTC分两批转入 Crypto.com，公司声称“未出售”。以平均每枚 $118,500 购入共11,542枚，浮亏已达 $4.55 亿。Q1 净亏损 $4.059 亿，收入仅 $87 万。</div>
+    </div>
+
+    <div class="news-item medium" data-impact="medium" data-category="market">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">比特币遭200日均线压制，ETF、Coinbase及韩国需求全面降温</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-medium">中影响</span><span class="badge badge-neutral">市场</span></div>
+      </div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-21 ｜ CoinDesk</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">比特币反弹在200日MA (~$82,400) 受阻，三大需求指标同步衰退：ETF近两周累计净流出约 $20 亿、Coinbase 溢价转负、韩国交易量萎缩，技术面显示多头主动买盘问题明显。</div>
+    </div>
+
+    <div class="news-item medium" data-impact="medium" data-category="institutional">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">Strategy 拟回购 $15 亿可转换票据，首次列出出售比特币为潜在资金来源</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-medium">中影响</span><span class="badge badge-neutral">机构</span></div>
+      </div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-21 ｜ Decrypt, Investing.com</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">Strategy 在 SEC 文件中首次明确列出“出售比特币”为潜在资金选项，是对“永不出售”立场的历史性转变。公司目前持有 843,738 枚 BTC，计划回购 2029 年到期票据。</div>
+    </div>
+
+    <div class="news-item medium" data-impact="medium" data-category="technical">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">Glassnode：30.2% 比特币供应量（~$4,690亿）面临量子计算攻击风险</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-medium">中影响</span><span class="badge badge-neutral">技术</span></div>
+      </div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-21 ｜ Decrypt, CryptoBriefing</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">约604万枚BTC（30.2%）因公钥已暴露，在未来量子电脑实现后面临被盗风险。其中9.6%属结构性暴露，20.6%属操作性暴露，交易所持有BTC约40%处于暴露状态。</div>
+    </div>
+
+    <div class="news-item medium" data-impact="medium" data-category="technical">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">THORChain 遭骇 $1,080 万；Verus Bridge 损失 $1,160 万（含 tBTC）</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-medium">中影响</span><span class="badge badge-neutral">技术</span></div>
+      </div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-15~18 ｜ CoinDesk, CoinGabbar</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">THORChain 因 TSS 密钥仪式被盗损失 $1,080 万，RUNE 跌 15%。Verus-以太坊跨链桥因跨链消息验证逻辑缺失被盗 $1,160 万（含103.6枚tBTC），资金透过 Tornado Cash 转移。</div>
+    </div>
+
+    <div class="news-item medium" data-impact="medium" data-category="legal">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">Coinbase 遭集体诉讼，指控未充分披露数据泄露及 FCA 罚款</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-medium">中影响</span><span class="badge badge-neutral">法律</span></div>
+      </div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-22 ｜ Finance Magnates, Milberg</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">投资人在宾州联邦法院对 Coinbase 及两名高管提起集体诉讼，涵盖2021年4月14日至2025年5月14日期间购买股票的投资人，索赔因数据泄露及英国FCA罚款被披露后的股价跌损。</div>
+    </div>
+
+    <div class="news-item low" data-impact="low" data-category="market">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+        <div style="font-size:0.85rem; font-weight:600; color:#e5e7eb;">比特币相对股市表现创历史最长落后期后，开始重新跑赢传统资产</div>
+        <div style="display:flex; gap:4px;"><span class="badge badge-low">低影响</span><span class="badge badge-neutral">市场</span></div>
+      </div>
+      <div style="font-size:0.8rem; color:#9ca3af; margin-bottom:4px;">2026-05-23 ｜ CoinDesk</div>
+      <div style="font-size:0.82rem; color:#d1d5db;">比特币结束相对标普500历史最长落后期，并在反弹中重新开始相对跑赢股票和债券。链上已实现市值趋稳、RHODL 读数偏高，2月 $60,000 低点可能已是本轮周期底部。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑥ 技术链上 -->
+<div style="max-width:1400px; margin:0 auto; padding: 0 24px 16px;">
+  <div class="section-title">⛓️ 技术链上</div>
+  <div class="grid-4" style="margin-bottom:16px;">
+    <div class="stat-card">
+      <div style="font-size:0.72rem; color:#9ca3af;">算力</div>
+      <div style="font-size:1.2rem; font-weight:700; color: var(--green);">963 EH/s</div>
+      <div style="font-size:0.72rem; color: var(--green);">▲ +1.4% 3日</div>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:0.72rem; color:#9ca3af;">难度 / 下次调整</div>
+      <div style="font-size:1rem; font-weight:700; color:#fff;">136.61 T</div>
+      <div style="font-size:0.72rem; color:#9ca3af;">+0.17% 预计 5/29</div>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:0.72rem; color:#9ca3af;">Mempool / 待确认</div>
+      <div style="font-size:1rem; font-weight:700; color:#fff;">179 MB</div>
+      <div style="font-size:0.72rem; color:#9ca3af;">49,300 笔交易</div>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:0.72rem; color:#9ca3af;">费率（sat/vB）</div>
+      <div style="font-size:1rem; font-weight:700; color: var(--green);">1 / 1 / 1 / 1</div>
+      <div style="font-size:0.72rem; color: var(--green);">快速/30分/1小时/最低</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:16px;">
+    <div class="card" style="padding:14px;">
+      <div style="font-size:0.85rem; font-weight:600; color: var(--btc); margin-bottom:10px;">⚡ 闪电网络</div>
+      <div style="display:flex; flex-wrap:wrap; gap:12px;">
+        <div><div style="font-size:0.72rem; color:#9ca3af;">容量</div><div style="font-size:1.1rem; font-weight:700; color:#fff;">5,600 BTC</div></div>
+        <div><div style="font-size:0.72rem; color:#9ca3af;">USD 等值</div><div style="font-size:1.1rem; font-weight:700; color:#fff;">~$576.8M</div></div>
+        <div><div style="font-size:0.72rem; color:#9ca3af;">节点</div><div style="font-size:1.1rem; font-weight:700; color:#fff;">17,000</div></div>
+        <div><div style="font-size:0.72rem; color:#9ca3af;">通道</div><div style="font-size:1.1rem; font-weight:700; color:#fff;">70,000</div></div>
+      </div>
+      <div style="margin-top:8px; font-size:0.78rem; color:#9ca3af;">最新动态：Mixin 整合闪电支付、LQWD 扩大有效网络资本</div>
+    </div>
+    <div class="card" style="padding:14px;">
+      <div style="font-size:0.85rem; font-weight:600; color: var(--btc); margin-bottom:10px;">⛏️ 矿工经济</div>
+      <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:8px;">
+        <div><div style="font-size:0.72rem; color:#9ca3af;">Hashprice</div><div style="font-size:1.1rem; font-weight:700; color:#fff;">$38.2/PH/d</div></div>
+        <div><div style="font-size:0.72rem; color:#9ca3af;">交易费占比</div><div style="font-size:1.1rem; font-weight:700; color:#9ca3af;">~3%</div></div>
+        <div><div style="font-size:0.72rem; color:#9ca3af;">流出讯号</div><div><span class="badge badge-warning">中度压力</span></div></div>
+      </div>
+      <div style="font-size:0.78rem; color:#9ca3af;">矿工生产成本估算仍高于 $90,000/BTC，持续转向 AI 算力以改善获利。</div>
+    </div>
+  </div>
+
+  <!-- 协议更新折叠 -->
+  <div class="card" style="padding:14px; margin-bottom:16px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+      <div style="font-size:0.85rem; font-weight:600; color: var(--btc);">📦 协议更新（4则）</div>
+      <button class="collapse-btn" onclick="toggleSection('protocolUpdates')">展开 ▼</button>
+    </div>
+    <div id="protocolUpdates" class="collapsible" style="max-height:0;">
+      <div style="padding-top:12px; display:flex; flex-direction:column; gap:12px;">
+        <div style="border-left: 3px solid var(--red); padding-left:10px;">
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:4px;">
+            <span class="badge badge-red">安全</span>
+            <a href="https://bitcoincore.org/en/2026/05/05/disclose-cve-2024-52911/" target="_blank" style="font-size:0.83rem; color:#93c5fd;">CVE-2024-52911：Bitcoin Core 节点高危漏洞披露</a>
           </div>
-          <div><div style="font-size:10px;color:#ef4444;">阻力</div>
-            <div style="font-size:11px;">$76,411 (24h高) · $77,000 (心理) · $78,216 (3D高)</div>
+          <div style="font-size:0.78rem; color:#9ca3af;">影响 0.14.1～28.4 版本，矿工挖出特制区块可导致节点崩溃，已于 v29.0 修补，约43%节点仍受影响。</div>
+        </div>
+        <div style="border-left: 3px solid var(--btc); padding-left:10px;">
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:4px;">
+            <span class="badge badge-neutral">核心</span>
+            <a href="https://bitcoincore.org/en/releases/31.0/" target="_blank" style="font-size:0.83rem; color:#93c5fd;">Bitcoin Core 31.0 正式发布：Cluster Mempool 架构升级</a>
           </div>
+          <div style="font-size:0.78rem; color:#9ca3af;">2026-05-05 发布，全面重构 Cluster Mempool，提升区块模板构建效率，预设 dbcache 升至 1024 MiB。</div>
         </div>
-      </div>
-      <!-- Reference Assets -->
-      <div class="grid-2" style="gap:8px;">
-        <div class="metric-card" style="text-align:center;">
-          <div style="font-size:10px;color:#6b7280;">ETH/USDT</div>
-          <div style="font-size:16px;font-weight:700;">$2,072</div>
-          <div style="font-size:11px;" class="red">▼ -0.90%</div>
-        </div>
-        <div class="metric-card" style="text-align:center;">
-          <div style="font-size:10px;color:#6b7280;">SOL/USDT</div>
-          <div style="font-size:16px;font-weight:700;">$84.68</div>
-          <div style="font-size:11px;" class="red">▼ -0.53%</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ETF Flows -->
-  <div style="margin-top:16px;">
-    <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">ETF资金流向 (搜索数据 · single_source_unverified)</div>
-    <div class="fallback-warn">⚠ ETF精确日度数据通过网络搜索获取，无法双源交叉验证，标记为 single_source_unverified</div>
-    <div class="grid-2" style="gap:12px;">
-      <div class="metric-card">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:6px;">近期关键节点</div>
-        <div style="font-size:11px;display:flex;flex-direction:column;gap:4px;">
-          <div><span class="green">2026-05-01:</span> +$630M 净流入 (IBIT领涨)</div>
-          <div><span class="green">2026-05-04:</span> +$532M (IBIT +$335M, FBTC +$185M)</div>
-          <div><span class="red">2026-05-13:</span> -$635M 历史最大单日净流出 (IBIT -$285M, FBTC -$133M)</div>
-          <div><span class="gray">月中:</span> 受CPI=3.8%影响，降息预期推后，资金观望</div>
-        </div>
-      </div>
-      <div class="metric-card">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:6px;">ETF趋势评估</div>
-        <div style="font-size:13px;font-weight:700;" class="red">近端净流出压力</div>
-        <div style="font-size:11px;color:#9ca3af;margin-top:4px;">月初大幅流入后，中期出现历史最大单日流出；机构情绪短期谨慎。月度背景：2026年初ETF批准带来大量新增需求，总规模持续增长，但宏观紧缩预期阶段性打压热情。</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Cross-Asset Correlation -->
-  <div style="margin-top:12px;">
-    <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">跨资产相关性 (30日，搜索数据)</div>
-    <div class="grid-3" style="gap:8px;">
-      <div class="metric-card" style="text-align:center;">
-        <div style="font-size:10px;color:#6b7280;">BTC vs S&P500</div>
-        <div style="font-size:16px;font-weight:700;" class="red">-0.38</div>
-        <div style="font-size:10px;color:#9ca3af;">弱负相关，股市走弱对BTC有轻微拖累</div>
-      </div>
-      <div class="metric-card" style="text-align:center;">
-        <div style="font-size:10px;color:#6b7280;">BTC vs DXY</div>
-        <div style="font-size:16px;font-weight:700;" class="red">-0.72</div>
-        <div style="font-size:10px;color:#9ca3af;">强负相关，美元走强是BTC近期压制主因</div>
-      </div>
-      <div class="metric-card" style="text-align:center;">
-        <div style="font-size:10px;color:#6b7280;">BTC vs Gold</div>
-        <div style="font-size:16px;font-weight:700;" class="yellow">-0.45</div>
-        <div style="font-size:10px;color:#9ca3af;">黄金ATH $5,595后回调，BTC并未跟随上涨</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== PREDICTION SECTION (AGENT 4) ===== -->
-<div class="card" style="margin-bottom:16px;border-color:#4c1d95;">
-  <div class="section-title" style="color:#a855f7;">🔮 短周期预测 (Agent 4 · Binance · subagent_inline)</div>
-  <!-- Status bar -->
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:10px;background:#0d0d0d;border-radius:8px;align-items:center;">
-    <span class="badge badge-purple">模型: subagent_inline</span>
-    <span class="badge badge-green">方向: 中性偏多 (up)</span>
-    <span class="badge badge-medium">信心: medium</span>
-    <span class="badge badge-gray">RSI(1h): 89.03 超买</span>
-    <span class="badge badge-gray">vol_ratio: 0.149 量缩</span>
-    <span class="badge badge-gray">回测历史: 首次运行</span>
-  </div>
-  <!-- Three Horizon Cards -->
-  <div class="grid-3" style="gap:12px;margin-bottom:16px;">
-    <!-- 1H -->
-    <div class="metric-card" style="border:1px solid #4c1d95;">
-      <div style="font-size:13px;font-weight:700;color:#a855f7;margin-bottom:8px;">1小时预测</div>
-      <div style="font-size:11px;color:#6b7280;">价格区间</div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:6px;"><span class="green">$75,519</span> – <span class="red">$76,117</span></div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">上行概率</div>
-      <div class="progress-bar" style="margin-bottom:4px;">
-        <div class="progress-fill" style="width:55%;background:#a855f7;"></div>
-      </div>
-      <div style="font-size:12px;font-weight:700;color:#a855f7;margin-bottom:8px;">55%</div>
-      <div style="font-size:10px;color:#9ca3af;">
-        <div>📈 触发多: 收盘 &gt;$76,124 且 vol&gt;830 BTC</div>
-        <div>📉 触发空: 跌破 $75,312 且量放大</div>
-      </div>
-      <details style="margin-top:6px;">
-        <summary style="font-size:10px;color:#6b7280;cursor:pointer;">▶ 推理摘要</summary>
-        <div style="font-size:10px;color:#9ca3af;margin-top:4px;">RSI超买下拉概率，preferred_direction=up微多，量缩无突破确认，ATR×1.0=298.5美元半幅</div>
-      </details>
-    </div>
-    <!-- 4H -->
-    <div class="metric-card" style="border:1px solid #4c1d95;">
-      <div style="font-size:13px;font-weight:700;color:#a855f7;margin-bottom:8px;">4小时预测</div>
-      <div style="font-size:11px;color:#6b7280;">价格区间</div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:6px;"><span class="green">$75,281</span> – <span class="red">$76,355</span></div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">上行概率</div>
-      <div class="progress-bar" style="margin-bottom:4px;">
-        <div class="progress-fill" style="width:52%;background:#a855f7;"></div>
-      </div>
-      <div style="font-size:12px;font-weight:700;color:#a855f7;margin-bottom:8px;">52%</div>
-      <div style="font-size:10px;color:#9ca3af;">
-        <div>📈 触发多: 突破 $76,355 并收盘站稳</div>
-        <div>📉 触发空: 跌破 $75,000 心理关口</div>
-      </div>
-      <details style="margin-top:6px;">
-        <summary style="font-size:10px;color:#6b7280;cursor:pointer;">▶ 推理摘要</summary>
-        <div style="font-size:10px;color:#9ca3af;margin-top:4px;">ATR×1.8=537美元半幅，量缩导致方向性不明，basis neutral，市场静待消息催化</div>
-      </details>
-    </div>
-    <!-- 1D -->
-    <div class="metric-card" style="border:1px solid #4c1d95;">
-      <div style="font-size:13px;font-weight:700;color:#a855f7;margin-bottom:8px;">1日预测</div>
-      <div style="font-size:11px;color:#6b7280;">价格区间</div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:6px;"><span class="green">$74,773</span> – <span class="red">$76,863</span></div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">上行概率</div>
-      <div class="progress-bar" style="margin-bottom:4px;">
-        <div class="progress-fill" style="width:55%;background:#a855f7;"></div>
-      </div>
-      <div style="font-size:12px;font-weight:700;color:#a855f7;margin-bottom:8px;">55%</div>
-      <div style="font-size:10px;color:#9ca3af;">
-        <div>📈 触发多: 日收盘 &gt;$76,411 且ETF流入转正</div>
-        <div>📉 触发空: 日收盘 &lt;$74,773</div>
-      </div>
-      <details style="margin-top:6px;">
-        <summary style="font-size:10px;color:#6b7280;cursor:pointer;">▶ 推理摘要</summary>
-        <div style="font-size:10px;color:#9ca3af;margin-top:4px;">ATR×3.5=1,045美元半幅，CLARITY法案/战略储备为潜在催化，DXY=-0.72相关是主要宏观风险</div>
-      </details>
-    </div>
-  </div>
-
-  <!-- Full 7-section narrative -->
-  <details>
-    <summary style="cursor:pointer;padding:8px 12px;background:#0d0d0d;border-radius:6px;font-size:12px;color:#a855f7;display:flex;align-items:center;gap:6px;">
-      <span>▶ 展开完整7段预测叙述</span>
-    </summary>
-    <div style="margin-top:10px;padding:14px;background:#070710;border-radius:8px;border:1px solid #2d1b69;font-size:12px;line-height:1.8;color:#c4b5fd;">
-      <div style="color:#a855f7;font-weight:700;margin-bottom:8px;">## 段 1：市场总览</div>
-      <p>当前 BTCUSDT 报价 $75,818，24h跌幅-0.60%。1小时K线过去10根显示从$74,657升至$75,818，呈上升趋势，但最后一根成交量仅82 BTC，远低于均量554 BTC（vol_ratio=0.149），量能极度收缩。RSI(1h)=89.03深入超买，15m RSI=79.97同样过热。1h BB：上轨76,123/中轨75,312/下轨74,500，现价接近上轨。</p>
-      <div style="color:#a855f7;font-weight:700;margin:10px 0 6px;">## 段 2：15分钟分析</div>
-      <p>15m RSI=79.97接近极值；BB上轨76,012，带宽仅0.99%，波幅收窄；vol_ratio=0.66，最后5根上涨量（346 BTC）优于下跌量（165 BTC），短期买盘有支撑但力度不足突破。当前在Range_120（高75,986/低75,372）上半部整盘。</p>
-      <div style="color:#a855f7;font-weight:700;margin:10px 0 6px;">## 段 3：1小时分析</div>
-      <p>1h RSI=89.03历史极少维持超过2-3根K线而不回调。BB上轨76,123为强阻力，现价距上轨305美元。vol_ratio=0.149极度收缩，breakout_state=no_breakout。ATR(14)=298.5美元为正常波动参考。Structural_bias=ranging，趋势性动力不足。</p>
-      <div style="color:#a855f7;font-weight:700;margin:10px 0 6px;">## 段 4：1小时预测</div>
-      <p>ATR×1.0=298.5，区间[$75,519–$76,117]。概率=0.55（preferred_direction +0.10，RSI>70 -0.05）。上行触发：收盘站上$76,124且量>830 BTC；下行触发：跌破1h BB中轨$75,312且量放大。</p>
-      <div style="color:#a855f7;font-weight:700;margin:10px 0 6px;">## 段 5：4小时预测</div>
-      <p>ATR×1.8=537.3，区间[$75,281–$76,355]。概率=0.52，方向性多空平衡。basis neutral，ETF近端流出，量缩无突破。上行触发：$76,355突破并收盘；下行触发：$75,000心理关口失守。</p>
-      <div style="color:#a855f7;font-weight:700;margin:10px 0 6px;">## 段 6：1日预测</div>
-      <p>ATR×3.5=1,044.75，区间[$74,773–$76,863]。概率=0.55。日内已跌-0.60%，收跌概率偏大，但3D低$74,257为强支撑。CLARITY Act进展与战略储备公告是向上突破的关键催化；DXY=-0.72相关是主要下行风险。</p>
-      <div style="color:#a855f7;font-weight:700;margin:10px 0 6px;">## 段 7：风险提示</div>
-      <p>① 技术超买：1h/15m RSI均极高，历史上此水平常伴随急跌，$75,000失守看$74,257；② 流动性风险：vol_ratio=0.149，小额卖单可造成大幅滑点；③ SEC延误代币化股票计划（5月23日）注入不确定性；④ CPI=3.8%推后降息预期，美元强势；⑤ 5月13日ETF-$635M历史最大流出，机构情绪脆弱。</p>
-      <div style="margin-top:12px;text-align:center;color:#6b7280;font-size:11px;">(非投资建议)</div>
-    </div>
-  </details>
-
-  <!-- Indicator Summary -->
-  <details style="margin-top:10px;">
-    <summary style="cursor:pointer;padding:8px 12px;background:#0d0d0d;border-radius:6px;font-size:12px;color:#6b7280;">▶ 查看技术指标摘要 (Binance数据)</summary>
-    <div style="margin-top:10px;">
-      <div class="grid-2" style="gap:10px;">
-        <div class="metric-card">
-          <div style="font-size:11px;color:#a855f7;font-weight:700;margin-bottom:6px;">15分钟指标</div>
-          <div style="font-size:11px;display:flex;flex-direction:column;gap:3px;">
-            <div>RSI(14): <span class="red">79.97</span> (超买)</div>
-            <div>BB: $76,012 / $75,639 / $75,265</div>
-            <div>BB宽度: 0.99% | ATR(14): $161.87</div>
-            <div>Vol ratio: <span class="yellow">0.66</span></div>
-            <div>Structural bias: <span class="green">bullish</span></div>
-            <div>Range: $75,986 – $75,372</div>
+        <div style="border-left: 3px solid var(--green); padding-left:10px;">
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:4px;">
+            <span class="badge badge-neutral">BIP</span>
+            <a href="https://bitcoinops.org/en/newsletters/2026/05/15/" target="_blank" style="font-size:0.83rem; color:#93c5fd;">Optech #405：UTXO 集合 P2P 分享 BIP 草案</a>
           </div>
+          <div style="font-size:0.78rem; color:#9ca3af;">Fabian Jahr 提出新 BIP，透过 P2P 直接分享 UTXO 集合，改善 assumeUTXO 并降低新节点信任需求。</div>
         </div>
-        <div class="metric-card">
-          <div style="font-size:11px;color:#a855f7;font-weight:700;margin-bottom:6px;">1小时指标</div>
-          <div style="font-size:11px;display:flex;flex-direction:column;gap:3px;">
-            <div>RSI(14): <span class="red">89.03</span> (深度超买)</div>
-            <div>BB: $76,123 / $75,312 / $74,500</div>
-            <div>BB宽度: 2.16% | ATR(14): $298.50</div>
-            <div>Vol ratio: <span class="red">0.149</span> (极度量缩)</div>
-            <div>Structural bias: <span class="yellow">ranging</span></div>
-            <div>Range: $75,986 – $74,657</div>
+        <div style="border-left: 3px solid var(--purple); padding-left:10px;">
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:4px;">
+            <span class="badge badge-neutral">Optech</span>
+            <a href="https://bitcoinops.org/en/newsletters/2026/05/15/" target="_blank" style="font-size:0.83rem; color:#93c5fd;">Optech #405：Core Lightning BOLT12 付款人证明</a>
           </div>
+          <div style="font-size:0.78rem; color:#9ca3af;">Core Lightning #9116 为 BOLT12 新增实验性“付款人证明”，允许付款方向第三方验证付款完成。</div>
         </div>
       </div>
     </div>
-  </details>
-</div>
+  </div>
 
-<!-- ===== NEWS TIMELINE (AGENT 2) ===== -->
-<div class="card" style="margin-bottom:16px;">
-  <div class="section-title">📰 新闻 & 政策 (Agent 2 · T-72h 窗口)</div>
-  <!-- Filters -->
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="news-filters">
-    <button class="tab-btn active" onclick="filterNews('all',this)">全部</button>
-    <button class="tab-btn" onclick="filterNews('high',this)">仅高影响</button>
-    <button class="tab-btn" onclick="filterNews('regulation',this)">监管</button>
-    <button class="tab-btn" onclick="filterNews('adoption',this)">采用</button>
-    <button class="tab-btn" onclick="filterNews('macro',this)">宏观</button>
-    <button class="tab-btn" onclick="filterNews('US',this)">美国</button>
-  </div>
-  <div id="news-container">
-    <!-- Event 1 -->
-    <div class="news-card news-high" data-impact="high" data-category="regulation" data-region="US">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
-        <div style="font-size:13px;font-weight:700;">CLARITY法案通过参议院银行委员会</div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;">
-          <span class="badge badge-high">高影响</span>
-          <span class="badge badge-gray">监管</span>
-          <span class="badge badge-gray">美国</span>
-        </div>
-      </div>
-      <div style="font-size:11px;color:#d1d5db;margin-bottom:6px;">数字资产市场明确性法案（CLARITY Act）于5月14日以15比9票通过美国参议院银行委员会，预计进入参议院全体投票程序，但仍面临超过100项修正案争议，核心分歧集中于生息稳定币和数字资产分类规则，该法案被市场视为BTC长期监管框架落地的关键里程碑。</div>
-      <div style="font-size:10px;color:#6b7280;">来源: <a href="https://www.coindesk.com/daybook-us/2026/05/14/clarity-act-markup-leaves-bitcoin-unstirred" style="color:#3b82f6;">CoinDesk</a> · <a href="https://fortune.com/2026/05/04/bitcoin-80k-clarity-act/" style="color:#3b82f6;">Fortune</a> · 发布: 2026-05-14T～ · 2来源已验证</div>
-    </div>
-    <!-- Event 2 -->
-    <div class="news-card news-high" data-impact="high" data-category="adoption" data-region="US">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
-        <div style="font-size:13px;font-weight:700;">战略比特币储备重大公告即将到来</div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;">
-          <span class="badge badge-high">高影响</span>
-          <span class="badge badge-gray">采用</span>
-          <span class="badge badge-gray">美国</span>
-        </div>
-      </div>
-      <div style="font-size:11px;color:#d1d5db;margin-bottom:6px;">白宫顾问Patrick Witt于Consensus 2026（5月6日）公开宣布，美国战略比特币储备的重大公告将在数周内发布，届时将明确储备的运营结构与法律框架。储备当前估计持有约328,000 BTC，价值逾267亿美元。参议院ARMA法案同步推进，从立法层面确立储备地位。</div>
-      <div style="font-size:10px;color:#6b7280;">来源: <a href="https://247wallst.com/investing/2026/05/15/why-the-clarity-acts-bipartisan-support-could-change-everything-for-bitcoin-and-xrp-this-may/" style="color:#3b82f6;">247wallst</a> · <a href="https://coinedition.com/bitcoin-price-prediction-2026-strategic-reserve-clarity-act-target-150k-250k/" style="color:#3b82f6;">CoinEdition</a> · 发布: 2026-05-06T～</div>
-    </div>
-    <!-- Event 3 -->
-    <div class="news-card news-high" data-impact="high" data-category="macro" data-region="US">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
-        <div style="font-size:13px;font-weight:700;">BTC ETF单日净流出-$635M创历史新高</div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;">
-          <span class="badge badge-high">高影响</span>
-          <span class="badge badge-gray">宏观</span>
-          <span class="badge badge-gray">美国</span>
-        </div>
-      </div>
-      <div style="font-size:11px;color:#d1d5db;margin-bottom:6px;">5月13日美国现货比特币ETF录得-6.35亿美元单日净流出，为自2026年1月底以来最大规模，其中IBIT单日流出2.85亿美元，FBTC流出1.33亿美元。分析师将此归因于CPI升至3.8%（4月数据）推高了市场对美联储维持高利率的预期，打压了风险资产配置意愿。</div>
-      <div style="font-size:10px;color:#6b7280;">来源: <a href="https://bitcoinfoundation.org/news/crypto-etfs-news/btc-etf-may-2026/" style="color:#3b82f6;">Bitcoin Foundation</a> · <a href="https://www.mexc.com/news/1073347" style="color:#3b82f6;">MEXC News</a> · 发布: 2026-05-13T～ · 2来源已验证</div>
-    </div>
-    <!-- Event 4 -->
-    <div class="news-card news-medium" data-impact="medium" data-category="regulation" data-region="US">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
-        <div style="font-size:13px;font-weight:700;">SEC延迟代币化股票计划裁决</div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;">
-          <span class="badge badge-medium">中影响</span>
-          <span class="badge badge-gray">监管</span>
-          <span class="badge badge-gray">美国</span>
-        </div>
-      </div>
-      <div style="font-size:11px;color:#d1d5db;margin-bottom:6px;">5月23日，SEC对代币化股票相关计划的批准决定再度延迟，为市场注入短期不确定性，引发盘中小幅下跌。延迟原因与监管框架尚未厘清有关，预计待CLARITY法案最终通过后方可加快审查进度。</div>
-      <div style="font-size:10px;color:#6b7280;">来源: <a href="https://investingnews.com/cryptocurrency-market-recap/" style="color:#3b82f6;">INN</a> · 发布: 2026-05-23T～</div>
-    </div>
-    <!-- Event 5 -->
-    <div class="news-card news-medium" data-impact="medium" data-category="macro" data-region="US">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
-        <div style="font-size:13px;font-weight:700;">Trump签署行政令：6大监管机构简化金融科技规则</div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;">
-          <span class="badge badge-medium">中影响</span>
-          <span class="badge badge-gray">宏观</span>
-          <span class="badge badge-gray">美国</span>
-        </div>
-      </div>
-      <div style="font-size:11px;color:#d1d5db;margin-bottom:6px;">5月19日，特朗普总统签署行政令，要求SEC、CFTC等六大联邦金融监管机构简化阻碍金融科技企业和非银行机构的规则，将过度监管定性为不公平竞争壁垒。该行政令为加密行业监管环境的持续松绑提供政策背书。</div>
-      <div style="font-size:10px;color:#6b7280;">来源: 多家媒体综合报道 · 发布: 2026-05-19T～</div>
-    </div>
-    <!-- Event 6 -->
-    <div class="news-card news-medium" data-impact="medium" data-category="macro" data-region="US">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
-        <div style="font-size:13px;font-weight:700;">Fed加密银行准入120日评估启动</div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;">
-          <span class="badge badge-medium">中影响</span>
-          <span class="badge badge-gray">宏观</span>
-          <span class="badge badge-gray">美国</span>
-        </div>
-      </div>
-      <div style="font-size:11px;color:#d1d5db;margin-bottom:6px;">特朗普签署行政令，要求美联储在120天内完成评估，确定加密货币公司是否应获得直接接入储备银行支付服务的资格。若评估结果为正，将对加密原生企业的银行准入产生深远影响，降低其对传统银行的依赖。</div>
-      <div style="font-size:10px;color:#6b7280;">来源: 搜索综合 · 发布: 2026-05-19T前后</div>
-    </div>
-  </div>
-  <div style="margin-top:10px;font-size:11px;color:#4b5563;">共 6 条事件 · 高影响: 3 · 中影响: 3 · 低影响: 0 · 丢弃（窗口外/无法确认）: 约2条</div>
-</div>
-
-<!-- ===== TECH & ONCHAIN (AGENT 3) ===== -->
-<div class="card" style="margin-bottom:16px;">
-  <div class="section-title">⛓ 技术 & 链上 (Agent 3 · mempool.space)</div>
-  <!-- Network Health -->
-  <div class="grid-4" style="gap:10px;margin-bottom:14px;">
-    <div class="metric-card" style="text-align:center;">
-      <div style="font-size:10px;color:#6b7280;">Hashrate (3d均值)</div>
-      <div style="font-size:16px;font-weight:700;color:#f7931a;">~986 EH/s</div>
-      <div style="font-size:10px;color:#9ca3af;">3d范围: 854–1,064 EH/s</div>
-    </div>
-    <div class="metric-card" style="text-align:center;">
-      <div style="font-size:10px;color:#6b7280;">难度调整</div>
-      <div style="font-size:16px;font-weight:700;color:#22c55e;">-0.01%</div>
-      <div style="font-size:10px;color:#9ca3af;">预计6天后 · 剩846块</div>
-    </div>
-    <div class="metric-card" style="text-align:center;">
-      <div style="font-size:10px;color:#6b7280;">Mempool大小</div>
-      <div style="font-size:16px;font-weight:700;">40 MB</div>
-      <div style="font-size:10px;color:#9ca3af;">104,971笔待确认</div>
-    </div>
-    <div class="metric-card" style="text-align:center;">
-      <div style="font-size:10px;color:#6b7280;">费率 (sat/vB)</div>
-      <div style="font-size:16px;font-weight:700;color:#22c55e;">1</div>
-      <div style="font-size:10px;color:#9ca3af;">快速/30分/1小时均为1</div>
-    </div>
-  </div>
-  <!-- Miner Economics + L2 -->
-  <div class="grid-2" style="gap:14px;margin-bottom:14px;">
-    <div class="metric-card">
-      <div style="font-size:11px;color:#f7931a;font-weight:700;margin-bottom:6px;">矿工经济</div>
-      <div style="font-size:11px;display:flex;flex-direction:column;gap:4px;">
-        <div>费率极低（全节点仅1 sat/vB），矿工手续费收入占比极低，主要依赖区块奖励</div>
-        <div>Mempool已进入"清空"状态，交易确认速度快</div>
-        <div>难度小幅下调（-0.014%），矿工压力轻微缓解</div>
-        <div>矿工流向信号: <span class="yellow">neutral</span> （无明显链上异常流出）</div>
-      </div>
-    </div>
-    <div class="metric-card">
-      <div style="font-size:11px;color:#f7931a;font-weight:700;margin-bottom:6px;">Layer 2 — 闪电网络</div>
-      <div style="font-size:11px;display:flex;flex-direction:column;gap:4px;">
-        <div>网络容量: <span class="green">&gt;5,600 BTC</span>（历史新高区域）</div>
-        <div>公开节点: ~17,000 · 通道数: ~40,000</div>
-        <div>月度交易量首次突破10亿美元（2月2026）</div>
-        <div>闪电网络速度（satoshi周转率）达历史高位</div>
-        <div>容量较2025年底（4,100 BTC）增长约37%</div>
-      </div>
-    </div>
-  </div>
-  <!-- Protocol Updates -->
-  <details>
-    <summary style="cursor:pointer;padding:8px 12px;background:#0d0d0d;border-radius:6px;font-size:12px;color:#6b7280;">▶ 协议更新 & 开发动态 (搜索补充)</summary>
-    <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">
-      <div class="metric-card">
-        <div style="font-size:12px;font-weight:700;margin-bottom:4px;">闪电网络容量 历史新高 <span class="badge badge-green">L2 里程碑</span></div>
-        <div style="font-size:11px;color:#9ca3af;">2026年5月中旬，闪电网络公开容量稳定在5,600 BTC以上，月度美元交易量突破10亿美元，企业级路由节点持续扩张。</div>
-      </div>
-      <div class="metric-card">
-        <div style="font-size:12px;font-weight:700;margin-bottom:4px;">Mempool极低费率环境 <span class="badge badge-gray">链上趋势</span></div>
-        <div style="font-size:11px;color:#9ca3af;">链上交易需求低迷（费率1 sat/vB），Ordinals/BRC-20/Runes铭文活动处于低活跃度阶段，未对区块空间形成竞争。</div>
-      </div>
-      <div class="metric-card">
-        <div style="font-size:12px;font-weight:700;margin-bottom:4px;">Hashrate 月度小幅下行 <span class="badge badge-medium">挖矿</span></div>
-        <div style="font-size:11px;color:#9ca3af;">据报道Bitcoin网络算力已连续两个月轻微下滑（5月1日报道），但3日均值仍在910–1,060 EH/s健康区间，下调预期仅-0.014%。</div>
-      </div>
-    </div>
-  </details>
-</div>
-
-<!-- ===== FOOTER ===== -->
-<div class="card" style="font-size:11px;color:#4b5563;">
-  <div class="grid-2" style="gap:16px;">
-    <div>
-      <div style="color:#6b7280;font-weight:700;margin-bottom:6px;">数据来源</div>
-      <div style="display:flex;flex-direction:column;gap:3px;">
-        <div><span class="badge badge-green">API</span> Crypto.com (BTC_USDT, BTCUSD-PERP, BTCUSD-INDEX, ETH_USDT, SOL_USDT)</div>
-        <div><span class="badge badge-green">API</span> Binance REST (24hr ticker, 15m klines, 1h klines)</div>
-        <div><span class="badge badge-green">Fetch</span> mempool.space/api (fees, hashrate, difficulty, mempool)</div>
-        <div><span class="badge badge-gray">Search</span> WebSearch 补充 ETF流量、新闻、跨资产相关性</div>
-      </div>
-    </div>
-    <div>
-      <div style="color:#6b7280;font-weight:700;margin-bottom:6px;">免责声明</div>
-      <div style="line-height:1.6;">本报告由 Claude AI 自动生成，所有内容仅作信息参考，不构成投资建议。加密货币市场波动剧烈，投资有较高风险，请自行评估并承担风险。</div>
-      <div style="margin-top:6px;padding:6px 10px;background:#1a0a00;border:1px solid #d97706;border-radius:4px;color:#fcd34d;">⚠ 预测免责：预测区间及概率基于技术指标规则引擎，不代表对未来价格的保证，（非投资建议）。</div>
-    </div>
-  </div>
-  <div style="margin-top:10px;text-align:center;color:#374151;">
-    生成时间: 2026-05-23T19:15:00Z · 排程任务: btc--dashboard · 模型: claude-sonnet-4-6
+  <!-- 铭文 -->
+  <div class="card" style="padding:14px;">
+    <div style="font-size:0.85rem; font-weight:600; color: var(--btc); margin-bottom:8px;">🪙 铭文活动</div>
+    <div><span class="badge badge-neutral">低活跃度</span><span style="font-size:0.8rem; color:#6b7280; margin-left:8px;">Ordinals / Runes 3日精确数据不可得，当前费率极低环境下铭文活动显著萎缩</span></div>
   </div>
 </div>
 
-</div><!-- end max-width container -->
+<!-- ⑦ 底部 -->
+<div style="max-width:1400px; margin:0 auto; padding: 0 24px;">
+  <div class="card" style="padding:14px; margin-bottom:16px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+      <div style="font-size:0.85rem; font-weight:600; color:#9ca3af;">📋 数据品质</div>
+      <button class="collapse-btn" onclick="toggleSection('dataQuality')">展开 ▼</button>
+    </div>
+    <div id="dataQuality" class="collapsible" style="max-height:0;">
+      <div style="padding-top:12px; font-size:0.78rem; color:#6b7280; line-height:1.7;">
+        <div><strong style="color:#9ca3af;">A1 市场：</strong>API 9/9 成功 | ETF fetch 失败 → WebSearch 补充（single_source_unverified） | 大单侦测 venue_too_thin | 跨资产相关性来自 WebSearch 近似值</div>
+        <div><strong style="color:#9ca3af;">A2 新闻：</strong>主要来源 fetch 受限 → 全部改用 WebSearch（14次） | n010 略超窗口已标注 | 丢弃8则（时间超窗口或无法确认）</div>
+        <div><strong style="color:#9ca3af;">A3 链上：</strong>mempool.space API fetch 受限 → WebSearch 补充 | 费率数据取自最近快照（2026-05-08） | LN 容量来自 2026-05-15 数据 | active_addr_3d 不可得</div>
+        <div><strong style="color:#9ca3af;">A4 预测：</strong>Binance API 3/3 成功 | 指标计算完成 | LLM Subagent 成功（llm_succeeded=True） | fallback_used=False | 历史记录已追加</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:14px; margin-bottom:16px;">
+    <div style="font-size:0.78rem; font-weight:600; color:#6b7280; margin-bottom:6px;">📚 主要来源</div>
+    <div style="display:flex; flex-wrap:wrap; gap:4px;">
+      <span class="source-text">Crypto.com Exchange API |</span>
+      <span class="source-text">Binance Public REST API |</span>
+      <span class="source-text">CoinDesk Markets |</span>
+      <span class="source-text">TheBlock.co |</span>
+      <span class="source-text">Decrypt.co |</span>
+      <span class="source-text">Bloomberg |</span>
+      <span class="source-text">Reuters |</span>
+      <span class="source-text">Bitcoin Core Official |</span>
+      <span class="source-text">Bitcoin Optech |</span>
+      <span class="source-text">Farside Investors |</span>
+      <span class="source-text">1ML.com |</span>
+      <span class="source-text">Mempool.space</span>
+    </div>
+  </div>
+</div>
+
+<div class="disclaimer">
+  ⚠️ 本 Dashboard 仅供资讯参考，不构成任何投资建议。加密货币市场波动剧烈，投资前请自行评估风险。<br>
+  BTC 每日 Dashboard v2.0 — 自动生成于 2026-05-24T00:00:00Z — 简体中文版
+</div>
 
 <script>
-// ===== 4H K-LINE CHART =====
-const klineData = [
-  {t:'5/20 08',o:77285.90,h:77659.42,l:77204.40,c:77369.03,v:276.88},
-  {t:'5/20 12',o:77369.04,h:77854.90,l:76871.51,c:77453.28,v:1076.37},
-  {t:'5/20 16',o:77453.28,h:77728.39,l:77002.62,c:77680.42,v:726.10},
-  {t:'5/20 20',o:77680.41,h:77786.38,l:77218.55,c:77552.02,v:381.10},
-  {t:'5/21 00',o:77556.21,h:78189.70,l:77518.85,c:78077.63,v:447.72},
-  {t:'5/21 04',o:78077.63,h:78182.22,l:77511.80,c:77881.67,v:253.85},
-  {t:'5/21 08',o:77881.68,h:78216.15,l:77133.81,c:77193.34,v:479.04},
-  {t:'5/21 12',o:77193.34,h:77417.65,l:76722.59,c:77258.26,v:1149.38},
-  {t:'5/21 16',o:77258.26,h:78100.12,l:77000.53,c:77689.37,v:1030.58},
-  {t:'5/21 20',o:77688.45,h:77819.89,l:77530.47,c:77616.72,v:284.89},
-  {t:'5/22 00',o:77616.72,h:77820.17,l:77310.39,c:77780.74,v:367.07},
-  {t:'5/22 04',o:77780.74,h:77909.17,l:77279.01,c:77408.08,v:260.05},
-  {t:'5/22 08',o:77408.08,h:77556.95,l:77172.35,c:77426.06,v:308.23},
-  {t:'5/22 12',o:77426.06,h:77585.39,l:76555.31,c:76792.56,v:943.68},
-  {t:'5/22 16',o:76795.37,h:77106.00,l:75656.63,c:75861.00,v:1183.30},
-  {t:'5/22 20',o:75861.00,h:76099.76,l:75339.73,c:75541.10,v:626.30},
-  {t:'5/23 00',o:75541.10,h:75667.98,l:75208.97,c:75637.94,v:524.50},
-  {t:'5/23 04',o:75637.93,h:75659.31,l:74256.94,c:74598.77,v:339.24},
-  {t:'5/23 08',o:74606.62,h:74873.00,l:74337.79,c:74796.82,v:258.30},
-  {t:'5/23 12',o:74796.82,h:75699.69,l:74652.22,c:75519.24,v:364.50},
-  {t:'5/23 16*',o:75519.24,h:76010.59,l:75366.00,c:75799.34,v:299.36,unconfirmed:true},
-];
-
-const ctx = document.getElementById('klineChart').getContext('2d');
-
-// Build bar chart approximating candlestick
-const labels = klineData.map(d=>d.t);
-const closes = klineData.map(d=>d.c);
-const opens = klineData.map(d=>d.o);
-const colors = klineData.map(d=>d.unconfirmed ? 'rgba(168,85,247,0.6)' : (d.c>=d.o?'rgba(34,197,94,0.8)':'rgba(239,68,68,0.8)'));
-const borderColors = klineData.map(d=>d.unconfirmed ? '#a855f7' : (d.c>=d.o?'#22c55e':'#ef4444'));
-
-new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: labels,
-    datasets: [
-      {
-        label: '收盘价',
-        data: closes,
-        backgroundColor: colors,
-        borderColor: borderColors,
-        borderWidth: 1,
-        borderRadius: 2,
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: (ctx) => {
-            const d = klineData[ctx.dataIndex];
-            return [
-              `开: $${d.o.toLocaleString()}`,
-              `高: $${d.h.toLocaleString()}`,
-              `低: $${d.l.toLocaleString()}`,
-              `收: $${d.c.toLocaleString()}`,
-              `量: ${d.v} BTC`,
-              d.unconfirmed ? '⚠ 未确认K线' : ''
-            ].filter(Boolean);
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        ticks: { color: '#6b7280', font: { size: 9 }, maxRotation: 45 },
-        grid: { color: '#1f2937' }
-      },
-      y: {
-        ticks: { color: '#6b7280', font: { size: 9 }, callback: v => '$'+v.toLocaleString() },
-        grid: { color: '#1f2937' },
-        min: 73500,
-        max: 79000
-      }
-    }
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  const btn = el.previousElementSibling.querySelector('.collapse-btn');
+  if (el.style.maxHeight && el.style.maxHeight !== '0px') {
+    el.style.maxHeight = '0';
+    btn.textContent = btn.textContent.replace('▲', '▼').replace('收起', '展开');
+  } else {
+    el.style.maxHeight = el.scrollHeight + 'px';
+    btn.textContent = btn.textContent.replace('▼', '▲').replace('展开', '收起');
   }
-});
+}
 
-// ===== NEWS FILTER =====
 function filterNews(filter, btn) {
-  document.querySelectorAll('#news-filters .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#newsTabs .tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.querySelectorAll('#news-container .news-card').forEach(card => {
-    if(filter === 'all') { card.style.display=''; return; }
-    const imp = card.dataset.impact;
-    const cat = card.dataset.category;
-    const reg = card.dataset.region;
-    if(filter === 'high') card.style.display = (imp==='high') ? '' : 'none';
-    else if(['regulation','adoption','macro','security','corporate'].includes(filter))
-      card.style.display = (cat===filter) ? '' : 'none';
-    else if(['US','EU','Asia','Global'].includes(filter))
-      card.style.display = (reg===filter) ? '' : 'none';
-    else card.style.display = '';
+  const items = document.querySelectorAll('#newsContainer .news-item');
+  items.forEach(item => {
+    if (filter === 'all') {
+      item.style.display = '';
+    } else if (['high', 'medium', 'low'].includes(filter)) {
+      item.style.display = item.dataset.impact === filter ? '' : 'none';
+    } else {
+      item.style.display = item.dataset.category === filter ? '' : 'none';
+    }
   });
 }
 </script>
+
 </body>
 </html>

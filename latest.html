@@ -1,296 +1,225 @@
-<!DOCTYPE html><html lang="zh-CN"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BTC 每日 Dashboard — 2026-06-02</title>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC 每日 Dashboard · 2026-06-07</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-:root{--bg:#0a0a0a;--orange:#f7931a;--green:#22c55e;--red:#ef4444;--purple:#a855f7;}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#e7e7e7;font-family:'Microsoft YaHei','PingFang SC','Segoe UI',sans-serif;line-height:1.6}
-.wrap{max-width:1280px;margin:0 auto;padding:20px}
-.card{background:#141414;border:1px solid #232323;border-radius:14px;padding:18px;margin-bottom:18px}
-h2.sec{font-size:18px;margin:0 0 14px;color:#fff;border-left:4px solid var(--orange);padding-left:10px}
-.warnbar{background:#3a2a0a;border:1px solid #f7931a55;color:#f7c66a;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:18px}
-.top{display:flex;flex-wrap:wrap;gap:18px;align-items:center}
-.price{font-size:44px;font-weight:800;color:#fff}
-.chg{font-size:20px;font-weight:700}
-.headline{font-size:22px;font-weight:700;color:var(--orange)}
-.pill{display:inline-block;background:#a855f71a;color:var(--purple);border:1px solid #a855f755;border-radius:999px;padding:3px 12px;font-size:13px;font-weight:600}
-.muted{color:#8a8a8a;font-size:12px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.stat{background:#0f0f0f;border:1px solid #232323;border-radius:10px;padding:12px}
-.stat .k{font-size:12px;color:#9a9a9a}.stat .v{font-size:18px;font-weight:700;color:#fff;margin-top:3px}
-.lamps{display:flex;flex-wrap:wrap;gap:14px}
-.lamp{flex:1;min-width:110px;text-align:center;background:#0f0f0f;border:1px solid #232323;border-radius:10px;padding:12px}
-.lamp-dot{width:16px;height:16px;border-radius:50%;margin:0 auto 8px}
-.lamp-label{font-weight:700;color:#fff}.lamp-state{font-size:11px;color:#9a9a9a;margin-top:3px}
-.insight-card{background:#0f0f0f;border:1px solid #232323;border-radius:10px;padding:13px;margin-bottom:10px}
-.insight-foot{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:#8a8a8a}
-.conf{padding:1px 8px;border-radius:999px}.conf-high{background:#ef44441a;color:#ef4444}.conf-medium{background:#f7931a1a;color:#f7931a}.conf-low{background:#6b72801a;color:#9a9a9a}
-.lvl{display:inline-block;padding:4px 10px;border-radius:8px;margin:3px;font-weight:700;font-size:13px}
-.lvl-r{background:#ef44441a;color:#ef4444;border:1px solid #ef444455}
-.lvl-s{background:#22c55e1a;color:#22c55e;border:1px solid #22c55e55}
-.pred-wrap{border:1px solid #a855f755;background:linear-gradient(180deg,#16101f,#141414)}
-.fc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.fc-card{background:#0f0a17;border:1px solid #a855f733;border-radius:12px;padding:14px}
-.fc-h{font-weight:800;color:var(--purple);font-size:16px}
-.fc-range{font-size:20px;font-weight:800;color:#fff;margin:6px 0}
-.fc-prob{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:8px}
-.fc-prob-bar{flex:1;height:7px;background:#222;border-radius:4px;overflow:hidden}.fc-prob-bar div{height:100%}
-.fc-trig{font-size:12px;color:#bdbdbd;margin-top:3px}.fc-trig b{color:#ddd}
-.statusbar{background:#f7931a1a;border:1px solid #f7931a55;color:#f7c66a;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:14px}
-.news-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #1f1f1f}
-.news-dot{width:10px;height:10px;border-radius:50%;margin-top:7px;flex-shrink:0}
-.news-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11px;color:#8a8a8a;margin-bottom:3px}
-.badge{padding:1px 7px;border-radius:6px;font-weight:700;font-size:10px}
-.news-title{font-weight:700;color:#fff}.news-sum{font-size:13px;color:#bdbdbd;margin-top:3px}
-.tabs{display:flex;gap:8px;margin-bottom:10px}.tab{padding:5px 14px;border-radius:999px;border:1px solid #2a2a2a;background:#0f0f0f;color:#bbb;cursor:pointer;font-size:13px}
-.tab.active{background:var(--orange);color:#000;border-color:var(--orange);font-weight:700}
-details{background:#0f0f0f;border:1px solid #232323;border-radius:10px;padding:10px 14px;margin-top:10px}
-summary{cursor:pointer;font-weight:700;color:var(--purple)}
-.seg{padding:10px 0;border-bottom:1px solid #1c1c1c}.seg-h{color:var(--purple);font-weight:700;font-size:13px}.seg-b{font-size:13px;color:#cfcfcf;margin-top:4px}
-.proto{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #1c1c1c;font-size:13px}
-.proto a{color:#7db3ff;text-decoration:none}.proto-meta{color:#8a8a8a;font-size:11px;white-space:nowrap}
-a{color:#7db3ff}ul{margin:6px 0;padding-left:20px}li{margin:3px 0;font-size:13px}
-.foot{font-size:12px;color:#7a7a7a}
-.na-tag{color:#6b7280;font-style:italic}
-@media(max-width:880px){.grid2,.grid3,.grid4,.fc-grid{grid-template-columns:1fr}.price{font-size:34px}}
-</style></head><body><div class="wrap">
+  body{background:#0a0a0a;color:#e5e5e5;font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;}
+  .card{background:#141414;border:1px solid #262626;border-radius:14px;}
+  .orange{color:#f7931a;} .green{color:#22c55e;} .red{color:#ef4444;} .purple{color:#a855f7;}
+  .bg-purplecard{background:linear-gradient(180deg,#1a0f29 0%,#141414 100%);border:1px solid #4c1d95;}
+  .chip{font-size:.72rem;padding:2px 8px;border-radius:999px;}
+  .light{width:14px;height:14px;border-radius:50%;display:inline-block;}
+  details>summary{cursor:pointer;list-style:none;} details>summary::-webkit-details-marker{display:none;}
+  .seg{border-left:3px solid #a855f7;padding-left:12px;margin-bottom:14px;}
+  .tl-item{border-left:2px solid #333;padding-left:14px;position:relative;}
+  .tl-item::before{content:"";position:absolute;left:-7px;top:4px;width:12px;height:12px;border-radius:50%;background:#f7931a;}
+  table{width:100%;border-collapse:collapse;} td,th{padding:7px 10px;border-bottom:1px solid #222;text-align:left;font-size:.85rem;}
+  .nodata{color:#666;font-style:italic;}
+  .newshide{display:none;}
+</style>
+</head>
+<body class="px-3 py-5 md:px-8 max-w-[1280px] mx-auto">
 
-<div class="warnbar">⚠ 本次运行无法访问 Crypto.com / Binance / mempool 实时 API（沙盒网络封锁），所有数值来自 2026-06-01~02 的公开网络来源（CoinDesk 等），可能滞后实时；订单簿/taker/精确指标缺失以占位显示。</div>
+<!-- 数据模式横条 -->
+<div class="rounded-lg px-4 py-2 mb-4 text-sm" style="background:#3a2a10;border:1px solid #f7931a;color:#f7931a;">
+  ⚠ 数据模式：<b>web_fallback（降级）</b> — 本地预取快照缺失（market_snapshot.json 不存在）。本期数据经 web_fetch / web_search 获取，部分字段缺失以「无数据」占位。建议运行 <code>安装BTC数据预取.command</code> 启用本地实时快照。
+</div>
 
 <!-- ① 顶部摘要 -->
-<div class="card top">
-  <div>
-    <div class="muted">BTC / USD</div>
-    <div class="price">$73,038</div>
-    <div class="chg" style="color:#ef4444">-1.01% / 24h</div>
-    <div class="muted">CoinDesk 价格组件 2026-06-01；正文另报约 $72,700 · 近况：近 7 日内 6 日收跌，5 月 -3.5%</div>
+<header class="card p-5 mb-5">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <div class="text-xs text-neutral-500">BTC 每日 Dashboard · <span id="asof"></span></div>
+      <h1 class="text-2xl md:text-3xl font-bold mt-1"><span class="orange">₿ Bitcoin</span> <span class="text-neutral-300">行情速览</span></h1>
+    </div>
+    <div class="text-right">
+      <div class="text-3xl md:text-4xl font-bold">$60,761</div>
+      <div class="red font-semibold">▼ 2.9% (24h) · 周跌约 17%</div>
+    </div>
   </div>
-  <div style="flex:1;min-width:260px">
-    <div class="headline">地缘避险叠加 ETF 连续外流，比特币弱势承压</div>
-    <div style="margin-top:8px"><span class="pill">Regime: macro_driven</span></div>
-    <div class="muted" style="margin-top:8px">价格由美伊地缘风险与现货 ETF 创纪录连续外流主导，而非链上基本面；同期与美股/软件股背离，呈宏观驱动的风险偏空格局。</div>
-    <div class="muted" style="margin-top:6px">生成时间: 2026-06-01T23:42:00Z（Asia/Taipei 2026-06-02 07:42）</div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+    <div class="card p-3"><div class="text-xs text-neutral-500">3日高 / 低</div><div class="font-semibold">$66,500 / $59,100</div></div>
+    <div class="card p-3"><div class="text-xs text-neutral-500">ETH</div><div class="font-semibold">$1,581.66</div></div>
+    <div class="card p-3"><div class="text-xs text-neutral-500">SOL</div><div class="font-semibold">$62.49 <span class="red text-xs">-5.75%</span></div></div>
+    <div class="card p-3"><div class="text-xs text-neutral-500">市场情绪</div><div class="font-semibold red">Risk-off · 深度超卖</div></div>
   </div>
-</div>
+</header>
 
 <!-- ② 整合洞察 -->
-<div class="card">
-  <h2 class="sec">整合洞察</h2>
-  <div class="grid2">
-    <div><div class="insight-card">
-      <div class="insight-text">ETF 资金面是当前最强空头叙事：连续 10 日净流出 $29.7 亿、5 月净流出 $23.0 亿创年内之最。</div>
-      <div class="insight-foot"><span>来源: 市场 + 新闻</span><span class="conf conf-high">high</span></div></div><div class="insight-card">
-      <div class="insight-text">衍生品并未恐慌：未平仓 $195 亿持平、三月基差升至 2.8%、Put/Call 偏看涨，显示机构风险偏好温和回稳。</div>
-      <div class="insight-foot"><span>来源: 市场</span><span class="conf conf-medium">medium</span></div></div><div class="insight-card">
-      <div class="insight-text">BTC 与美股/软件股脱钩（与 IGV 相关性降至 0.58），AI 行情吸金、加密相对失血。</div>
-      <div class="insight-foot"><span>来源: 市场 + 新闻</span><span class="conf conf-medium">medium</span></div></div><div class="insight-card">
-      <div class="insight-text">价格超卖（RSI14≈31）但处下行结构，$72,280 清算位为关键多空分水岭。</div>
-      <div class="insight-foot"><span>来源: 预测 + 市场</span><span class="conf conf-medium">medium</span></div></div></div>
+<section class="card p-5 mb-5">
+  <div class="flex items-center gap-2 mb-1"><span class="chip" style="background:#3a1010;color:#ef4444;">REGIME: RISK_OFF</span></div>
+  <h2 class="text-xl font-bold mb-2">机构创纪录撤离叠加深度超卖，BTC 失守 61,000</h2>
+  <p class="text-sm text-neutral-400 mb-4">ETF 13 日净流出 $4.33B（59,351 BTC）、Mt.Gox 6/2 转移 10,306 BTC 复燃抛压、单日清算逾 $1.5B、与美股相关性上升、降息预期降温，资金全面 risk-off。</p>
+
+  <div class="grid md:grid-cols-2 gap-5">
     <div>
-      <div class="muted" style="margin-bottom:8px">五维信号灯</div>
-      <div class="lamps"><div class="lamp"><div class="lamp-dot" style="background:#6b7280;box-shadow:0 0 12px #6b728099"></div>
-      <div class="lamp-label">Taker</div><div class="lamp-state">无数据</div></div><div class="lamp"><div class="lamp-dot" style="background:#22c55e;box-shadow:0 0 12px #22c55e99"></div>
-      <div class="lamp-label">基差</div><div class="lamp-state">long_lean（基差 2.8%，偏多）</div></div><div class="lamp"><div class="lamp-dot" style="background:#6b7280;box-shadow:0 0 12px #6b728099"></div>
-      <div class="lamp-label">深度</div><div class="lamp-state">无数据</div></div><div class="lamp"><div class="lamp-dot" style="background:#ef4444;box-shadow:0 0 12px #ef444499"></div>
-      <div class="lamp-label">ETF</div><div class="lamp-state">强烈净流出（偏空）</div></div><div class="lamp"><div class="lamp-dot" style="background:#ef4444;box-shadow:0 0 12px #ef444499"></div>
-      <div class="lamp-label">新闻</div><div class="lamp-state">偏空（地缘 + 资金外流）</div></div></div>
-      <div class="stat" style="margin-top:12px">
-        <div class="k">预测一致性 · 基本对齐</div>
-        <div class="v" style="font-size:15px">方向 中性偏空 / 情绪 偏空</div>
-        <div class="muted" style="margin-top:4px">Agent4 方向（中性偏空）与 ETF/新闻空头信号一致；与基差偏多信号存在温和背离。</div>
+      <h3 class="font-semibold mb-2 text-neutral-300">关键洞察</h3>
+      <ul class="space-y-2 text-sm text-neutral-300">
+        <li>① ETF 连续 13 日净流出 $4.33B（59,351 BTC），创 2024 年以来最大单周 $3.4B 撤离，机构 risk-off 主导本轮回调。</li>
+        <li>② RSI(14) 跌至约 16 深度超卖，$59,100 多次破位失败 + 1h 卖压减弱，短线存技术性反弹潜力。</li>
+        <li>③ OI 降至约 $25B 六个月低位、资金费率转中性偏负、CME 基差从 12% 收缩至 4–5% 年化，杠杆显著去化。</li>
+        <li>④ Mt.Gox 6/2 转移 10,306 BTC（约 $731M）重燃债权人分发担忧，与美债收益率上行、降息预期降温共振。</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="font-semibold mb-2 text-neutral-300">情绪信号灯（5 项）</h3>
+      <div class="space-y-2 text-sm">
+        <div><span class="light" style="background:#ef4444"></span> Taker 买卖比：<b class="red">偏卖</b> <span class="nodata">(single_source_unverified)</span></div>
+        <div><span class="light" style="background:#eab308"></span> 永续基差：<b style="color:#eab308">中性</b>（CME 基差收缩至 4–5%）</div>
+        <div><span class="light" style="background:#666"></span> 订单簿深度比：<span class="nodata">无数据</span></div>
+        <div><span class="light" style="background:#ef4444"></span> ETF 资金流：<b class="red">净流出</b>（13 日 $4.33B）</div>
+        <div><span class="light" style="background:#ef4444"></span> 综合情绪三向：<b class="red">偏空 / 风险规避</b></div>
       </div>
-      <div class="muted" style="margin-top:10px">背离提示：资金/宏观面偏空，但衍生品基差与期权偏多，呈现资金面与定位面背离。</div>
-      <div style="margin-top:12px"><div class="muted">关注清单 Watchlist</div><ul><li>$72,280 清算位是否放量击穿</li><li>ETF 资金流是否止血（连续外流能否中断）</li><li>美伊局势进展</li><li>$73,800 / $74,651 上方阻力能否收复</li><li>6/13 难度下调约 4% 对矿工影响</li></ul></div>
+      <div class="card p-3 mt-3 bg-purplecard">
+        <div class="text-xs purple font-semibold mb-1">预测一致性</div>
+        <div class="text-sm">方向 <b class="red">下行</b> · 情绪 <b class="red">偏空</b> · 状态 <b class="green">对齐</b><br>
+        <span class="text-neutral-400">A4 偏空与 A1 risk-off / 资金费率转负方向一致；但 RSI 深度超卖或引发均值回归反弹，需防短线方向背离。</span></div>
+      </div>
     </div>
   </div>
-</div>
+
+  <div class="mt-4">
+    <h3 class="font-semibold mb-2 text-neutral-300">观察清单 Watchlist</h3>
+    <div class="flex flex-wrap gap-2 text-xs">
+      <span class="chip" style="background:#1f1f1f;">$59,100 关键支撑</span>
+      <span class="chip" style="background:#1f1f1f;">$61,800 / $63,500 阻力</span>
+      <span class="chip" style="background:#1f1f1f;">ETF 能否转净流入</span>
+      <span class="chip" style="background:#1f1f1f;">Mt.Gox 后续转币</span>
+      <span class="chip" style="background:#1f1f1f;">6/13 难度调整 −9.9%</span>
+      <span class="chip" style="background:#1f1f1f;">美债收益率 / 降息预期</span>
+    </div>
+  </div>
+</section>
 
 <!-- ③ 市场区 -->
-<div class="card">
-  <h2 class="sec">市场分析</h2>
-  <div class="grid2">
-    <div><div class="muted" style="margin-bottom:6px">近期价格走势（示意 · 据公开收盘价近似）</div><canvas id="priceChart" height="180"></canvas></div>
-    <div><div class="muted" style="margin-bottom:6px">ETF 资金面（CoinDesk 报道）</div><canvas id="etfChart" height="180"></canvas></div>
-  </div>
-  <div class="grid4" style="margin-top:16px">
-    <div class="stat"><div class="k">未平仓 OI</div><div class="v">$19.5B</div></div>
-    <div class="stat"><div class="k">三月基差</div><div class="v" style="color:var(--green)">2.8%</div></div>
-    <div class="stat"><div class="k">资金费率</div><div class="v" style="font-size:14px">0%–10% 年化（多个交易所为正）</div></div>
-    <div class="stat"><div class="k">24h 清算</div><div class="v">$282M</div></div>
-    <div class="stat"><div class="k">深度比 (bid/ask)</div><div class="v na-tag">无 API</div></div>
-    <div class="stat"><div class="k">Taker 买卖比</div><div class="v na-tag">无 API</div></div>
-    <div class="stat"><div class="k">Put/Call</div><div class="v" style="font-size:15px">61/39 偏看涨</div></div>
-    <div class="stat"><div class="k">核心清算位</div><div class="v" style="color:var(--red)">$72,280</div></div>
-  </div>
-  <div style="margin-top:14px">
-    <div class="muted">关键阻力</div><div><span class="lvl lvl-r">$73,800</span><span class="lvl lvl-r">$74,000</span><span class="lvl lvl-r">$74,651</span><span class="lvl lvl-r">$75,000</span></div>
-    <div class="muted" style="margin-top:8px">关键支撑</div><div><span class="lvl lvl-s">$72,500</span><span class="lvl lvl-s">$72,280</span><span class="lvl lvl-s">$70,000</span><span class="lvl lvl-s">$68,300</span></div>
-  </div>
-  <div class="grid3" style="margin-top:16px">
-    <div class="stat"><div class="k">ETH 24h</div><div class="v" style="color:var(--red)">-1.0%</div></div>
-    <div class="stat"><div class="k">SOL</div><div class="v">~$80+</div></div>
-    <div class="stat"><div class="k">vs 美股/软件股</div><div class="v" style="font-size:13px">背离 · IGV 相关性 0.58</div></div>
-  </div>
-  <details><summary>ETF 资金细节 / 大单</summary>
-    <ul>
-      <li>现货 BTC ETF 连续 10 日净流出，累计约 $2.97B</li>
-      <li>5 月净流出约 $2.30B — 2026 年内最大单月净流出，2025 年 11 月以来最陡</li>
-      <li>大单：5/31 约 $1.26B IBIT 抛售，疑大型投资者快速离场</li>
-      <li class="muted">校验：single_source_unverified（farside/sosovalue 实时表为 JS 渲染未取到，数值来自 CoinDesk 报道）</li>
-    </ul></details>
-</div>
-
-<!-- ④ 预测区 -->
-<div class="card pred-wrap">
-  <h2 class="sec" style="border-color:var(--purple)">短周期预测（1H / 4H / 1D）</h2>
-  <div class="statusbar">⚠ 规则引擎降级输出 · 置信度 low · 无实时 K 线/指标，区间为基于 ATR≈$420 的估算（乘数 1h/4h/1d=1.0/1.8/3.5）。RSI14≈31（超卖）。</div>
-  <div class="fc-grid"><div class="fc-card">
-      <div class="fc-h">未来 1H</div>
-      <div class="fc-range">$72,620 – $73,460</div>
-      <div class="fc-prob"><div class="fc-prob-bar"><div style="width:46%;background:#ef4444"></div></div><span>上行 46%</span></div>
-      <div class="fc-trig"><b>多头触发:</b> 放量站回 $73,460 上方</div>
-      <div class="fc-trig"><b>空头触发:</b> 跌破 $72,500 → 试 $72,280 清算位</div></div><div class="fc-card">
-      <div class="fc-h">未来 4H</div>
-      <div class="fc-range">$72,280 – $73,790</div>
-      <div class="fc-prob"><div class="fc-prob-bar"><div style="width:48%;background:#ef4444"></div></div><span>上行 48%</span></div>
-      <div class="fc-trig"><b>多头触发:</b> 突破 $73,800 阻力并维持</div>
-      <div class="fc-trig"><b>空头触发:</b> 失守 $72,280 → 下探 $71,640</div></div><div class="fc-card">
-      <div class="fc-h">未来 1D</div>
-      <div class="fc-range">$71,570 – $74,510</div>
-      <div class="fc-prob"><div class="fc-prob-bar"><div style="width:50%;background:#22c55e"></div></div><span>上行 50%</span></div>
-      <div class="fc-trig"><b>多头触发:</b> 收回 $74,000–$74,651（78.6% 斐波）</div>
-      <div class="fc-trig"><b>空头触发:</b> 跌破 $72,000 → 目标 $68,300</div></div></div>
-  <details><summary>展开 7 段推理</summary><div class="seg"><div class="seg-h">## 段 1</div><div class="seg-b">推理：BTC 现价约 $73,038，近 7 日 6 日收跌、5 月收跌 3.5%，叠加 ETF 连续 10 日净流出与美伊地缘风险，宏观与资金面共同压制。结论：短期处弱势震荡偏空，但衍生品定位（基差 2.8%、Put/Call 偏看涨）显示机构未恐慌。</div></div><div class="seg"><div class="seg-h">## 段 2</div><div class="seg-b">推理：缺乏 15m 实时 K 线，依据公开价位推断短周期围绕 $72,500–$73,800 区间反复，$72,280 为币安清算热力核心。结论：15m 视角区间震荡，下沿清算位是多空分水岭。</div></div><div class="seg"><div class="seg-h">## 段 3</div><div class="seg-b">推理：1h 结构受 50/200 均线压制，RSI14≈31 超卖。结论：1h 偏空但具备超卖反弹条件，方向中性偏空。</div></div><div class="seg"><div class="seg-h">## 段 4</div><div class="seg-b">推理：以现价为中心、ATR≈$420×1.0。结论：未来 1h 区间约 $72,620–$73,460，上行概率约 0.46；站回 $73,460 转多，跌破 $72,500 加速下行。</div></div><div class="seg"><div class="seg-h">## 段 5</div><div class="seg-b">推理：ATR×1.8。结论：未来 4h 区间约 $72,280–$73,790，上行概率约 0.48；突破 $73,800 打开反弹，失守 $72,280 下看 $71,640。</div></div><div class="seg"><div class="seg-h">## 段 6</div><div class="seg-b">推理：ATR×3.5。结论：未来 1d 区间约 $71,570–$74,510，上行概率约 0.50；收回 $74,000–$74,651 偏多，跌破 $72,000 下看 $68,300。</div></div><div class="seg"><div class="seg-h">## 段 7</div><div class="seg-b">风险：①本预测为规则引擎降级输出（无实时 K 线/指标），区间为估算；②地缘事件与 ETF 资金流可瞬时改变方向；③$72,280 清算位附近若放量击穿可能引发连环止损。（非投资建议）</div></div></details>
-</div>
-
-<!-- ⑤ 新闻时间轴 -->
-<div class="card">
-  <h2 class="sec">新闻与政策（T-72h）</h2>
-  <div class="tabs">
-    <div class="tab active" data-f="all" onclick="filterNews('all',this)">全部</div>
-    <div class="tab" data-f="high" onclick="filterNews('high',this)">高</div>
-    <div class="tab" data-f="medium" onclick="filterNews('medium',this)">中</div>
-    <div class="tab" data-f="low" onclick="filterNews('low',this)">低</div>
-  </div>
-  <div id="newsList"><div class="news-item" data-impact="high">
-      <div class="news-dot" style="background:#ef4444"></div>
-      <div class="news-body">
-        <div class="news-meta"><span class="badge" style="background:#ef44441a;color:#ef4444;border:1px solid #ef444455">HIGH</span>
-        <span class="news-cat">机构/资金</span><span class="news-date">2026-06-01 · CoinDesk</span></div>
-        <div class="news-title">BTC 现货 ETF 创纪录连续外流，比特币延续跌势</div>
-        <div class="news-sum">现货比特币 ETF 连续 10 个交易日净流出，累计约 $29.7 亿，为有记录最长连续外流；同期华尔街在 AI 行情中走强，比特币与科技股背离。</div>
-      </div></div><div class="news-item" data-impact="high">
-      <div class="news-dot" style="background:#ef4444"></div>
-      <div class="news-body">
-        <div class="news-meta"><span class="badge" style="background:#ef44441a;color:#ef4444;border:1px solid #ef444455">HIGH</span>
-        <span class="news-cat">机构/资金</span><span class="news-date">2026-05-31 · CoinDesk</span></div>
-        <div class="news-title">贝莱德 IBIT 单笔约 $12.6 亿抛售，疑大户快速离场</div>
-        <div class="news-sum">5/31 出现约 $12.6 亿 IBIT 抛售，分析认为是单一大型投资者的快速离场行为，加剧 ETF 资金外流叙事。</div>
-      </div></div><div class="news-item" data-impact="high">
-      <div class="news-dot" style="background:#ef4444"></div>
-      <div class="news-body">
-        <div class="news-meta"><span class="badge" style="background:#ef44441a;color:#ef4444;border:1px solid #ef444455">HIGH</span>
-        <span class="news-cat">宏观/地缘</span><span class="news-date">2026-06-01 · CoinDesk</span></div>
-        <div class="news-title">美伊紧张升级，避险情绪压制加密市场</div>
-        <div class="news-sum">美国与伊朗交火、和谈未能缓解地区紧张，6 月开局加密市场普跌，CoinDesk 20 指数自午夜 UTC 跌约 2%。</div>
-      </div></div><div class="news-item" data-impact="medium">
-      <div class="news-dot" style="background:#f7931a"></div>
-      <div class="news-body">
-        <div class="news-meta"><span class="badge" style="background:#f7931a1a;color:#f7931a;border:1px solid #f7931a55">MEDIUM</span>
-        <span class="news-cat">机构/代币化</span><span class="news-date">2026-05-27 · CoinDesk</span></div>
-        <div class="news-title">Stellar XLM 因 DTCC 代币化合作单日大涨逾 40%</div>
-        <div class="news-sum">DTCC 选择 Stellar 网络承载其代币化证券平台（2027 上半年接入），XLM 24 小时涨 40.4% 至 $0.2862，未平仓量与现货成交同步放大。</div>
-      </div></div><div class="news-item" data-impact="medium">
-      <div class="news-dot" style="background:#f7931a"></div>
-      <div class="news-body">
-        <div class="news-meta"><span class="badge" style="background:#f7931a1a;color:#f7931a;border:1px solid #f7931a55">MEDIUM</span>
-        <span class="news-cat">安全/DeFi</span><span class="news-date">2026-06-01 · CoinDesk</span></div>
-        <div class="news-title">Aave 在 $2.3 亿 rsETH 漏洞后全面收紧上币标准</div>
-        <div class="news-sum">一起 $2.3 亿 rsETH 漏洞暴露跨桥风险后，Aave 修订资产上币标准以强化风险控制。</div>
-      </div></div><div class="news-item" data-impact="medium">
-      <div class="news-dot" style="background:#f7931a"></div>
-      <div class="news-body">
-        <div class="news-meta"><span class="badge" style="background:#f7931a1a;color:#f7931a;border:1px solid #f7931a55">MEDIUM</span>
-        <span class="news-cat">安全/公链</span><span class="news-date">2026-06-01 · CoinDesk</span></div>
-        <div class="news-title">Sui 主网 48 小时内三度停摆，溯源至升级 bug</div>
-        <div class="news-sum">Sui 主网在 48 小时内三次停摆，开发者将其追溯至一次升级引入的 bug，引发对公链稳定性的担忧。</div>
-      </div></div><div class="news-item" data-impact="medium">
-      <div class="news-dot" style="background:#f7931a"></div>
-      <div class="news-body">
-        <div class="news-meta"><span class="badge" style="background:#f7931a1a;color:#f7931a;border:1px solid #f7931a55">MEDIUM</span>
-        <span class="news-cat">监管/政策</span><span class="news-date">2026-05-31 · CoinDesk</span></div>
-        <div class="news-title">美众议院金融服务委员会推进代币化议程，GENIUS 征询期结束</div>
-        <div class="news-sum">美国国会复会，GENIUS 稳定币法案征询期结束，众议院金融服务委员会持续推进代币化相关立法议程。</div>
-      </div></div><div class="news-item" data-impact="low">
-      <div class="news-dot" style="background:#6b7280"></div>
-      <div class="news-body">
-        <div class="news-meta"><span class="badge" style="background:#6b72801a;color:#6b7280;border:1px solid #6b728055">LOW</span>
-        <span class="news-cat">研究/展望</span><span class="news-date">2026-06-01 · CoinDesk</span></div>
-        <div class="news-title">花旗预测代币化证券市场 2030 年达 $5.5 万亿</div>
-        <div class="news-sum">花旗发布报告，预测代币化证券市场规模将在 2030 年增长至约 $5.5 万亿。</div>
-      </div></div><div class="news-item" data-impact="low">
-      <div class="news-dot" style="background:#6b7280"></div>
-      <div class="news-body">
-        <div class="news-meta"><span class="badge" style="background:#6b72801a;color:#6b7280;border:1px solid #6b728055">LOW</span>
-        <span class="news-cat">监管/执法</span><span class="news-date">2026-05-30 · CoinDesk</span></div>
-        <div class="news-title">SEC 起诉得州男子涉 $1230 万假 AI 交易机器人骗局</div>
-        <div class="news-sum">SEC 对一名得州男子提起诉讼，指控其以虚假 AI 交易机器人为名实施约 $1230 万的加密骗局。</div>
-      </div></div></div>
-</div>
-
-<!-- ⑥ 技术链上 -->
-<div class="card">
-  <h2 class="sec">技术与链上</h2>
-  <div class="grid4">
-    <div class="stat"><div class="k">全网算力</div><div class="v">~995 EH/s</div></div>
-    <div class="stat"><div class="k">当前难度</div><div class="v">138.96 T</div></div>
-    <div class="stat"><div class="k">下次难度调整</div><div class="v" style="color:var(--red)">-4.0%</div></div>
-    <div class="stat"><div class="k">预计时间</div><div class="v" style="font-size:14px">约 2026-06-13</div></div>
-    <div class="stat"><div class="k">手续费 sat/vB</div><div class="v na-tag">无 API</div></div>
-    <div class="stat"><div class="k">内存池</div><div class="v na-tag">无 API</div></div>
-    <div class="stat"><div class="k">Hashprice</div><div class="v na-tag">无 API</div></div>
-    <div class="stat"><div class="k">铭文活跃度</div><div class="v" style="font-size:14px">低活跃度</div></div>
-  </div>
-  <div class="muted" style="margin-top:10px">下一次难度调整预计约 6/13 下调约 4%（138.96T→133.40T），暗示近 3 日算力略有回落；实时手续费/内存池数据本次无法获取（mempool API 不可达）。</div>
-  <div class="muted" style="margin-top:4px">算力口径说明：由当前难度反推约 ~995 EH/s；CoinWarz 现货约 904 EH/s、另有来源约 1025 EH/s，存在口径差异</div>
-  <details><summary>协议动态 / Layer 2</summary>
-    <div class="proto"><a href="https://www.coindesk.com/tech/2026/06/01/whitehat-developer-unlocks-usd2-million-stuck-in-a-2016-ethereum-ico-contract-for-nine-years" target="_blank">白帽开发者解锁 2016 年以太坊 ICO 合约中沉睡 9 年的 $200 万</a><span class="proto-meta">生态 · 2026-06-01</span></div><div class="proto"><a href="https://www.coindesk.com/" target="_blank">有 BTC 开发者提议冻结易受量子攻击的币（讨论中）</a><span class="proto-meta">协议讨论 · 2026-06-01</span></div>
-    <div class="muted" style="margin-top:8px">Layer2: Lightning 容量/节点数本次无数据（1ml 不可达）。　矿工: 2026 处于减半后周期，矿工经济偏紧；本次无法获取实时 hashprice。</div>
-  </details>
-</div>
-
-<!-- ⑦ 底部 -->
-<div class="card">
-  <h2 class="sec">来源与数据质量</h2>
-  <div class="grid2">
-    <div><div class="muted">来源</div><ul><li><a href="https://www.coindesk.com/markets/2026/06/01/bitcoin-ether-start-june-in-the-red-while-futures-show-taste-for-risk-xlm-hype-gain" target="_blank">CoinDesk — BTC/ETH start June in the red (2026-06-01)</a></li><li><a href="https://www.coindesk.com/markets/2026/06/01/bitcoin-extends-slide-as-spot-etf-outflows-hit-a-record-while-wall-street-rips-on-ai" target="_blank">CoinDesk — Bitcoin extends slide as spot ETF outflows hit record</a></li><li><a href="https://www.coindesk.com/markets/2026/05/31/a-massive-usd1-26-billion-sale-of-blackrock-s-ibit-was-likely-a-rapid-exit-by-a-large-investor" target="_blank">CoinDesk — $1.26B IBIT sale likely rapid exit</a></li><li><a href="https://www.coinwarz.com/mining/bitcoin/hashrate-chart" target="_blank">CoinWarz — BTC Hashrate</a></li><li><a href="https://newhedge.io/bitcoin/difficulty-estimator" target="_blank">Newhedge — Difficulty Estimator</a></li><li><a href="https://www.investing.com/crypto/bitcoin/technical" target="_blank">Investing.com — BTC Technical</a></li><li><a href="https://farside.co.uk/btc/" target="_blank">Farside — BTC ETF Flows</a></li></ul></div>
+<section class="card p-5 mb-5">
+  <h2 class="text-lg font-bold mb-3 orange">市场分析</h2>
+  <div class="grid md:grid-cols-2 gap-5">
     <div>
-      <div class="muted">本次失败/缺失</div>
-      <ul><li>Crypto.com 连接器不可用</li><li>Binance API 沙盒不可达</li><li>mempool/1ml API 不可达</li><li>farside/sosovalue 实时表 JS 渲染未取到</li></ul>
-      <div class="muted" style="margin-top:6px">无数据字段：order_book depth_ratio、taker flow、large_trades、实时 fees/mempool、Lightning 容量、hashprice、gold/dxy 相关性</div>
+      <h3 class="text-sm font-semibold text-neutral-300 mb-2">现货 & 跨资产</h3>
+      <table>
+        <tr><th>资产</th><th>价格</th><th>24h</th></tr>
+        <tr><td>BTC</td><td>$60,761</td><td class="red">-2.9%</td></tr>
+        <tr><td>ETH</td><td>$1,581.66</td><td class="nodata">—</td></tr>
+        <tr><td>SOL</td><td>$62.49</td><td class="red">-5.75%</td></tr>
+      </table>
+      <p class="text-xs text-neutral-500 mt-2">BTC 周跌约 17%、四周约 -21%，触四个月低位；与美股相关性上升、独立性下降。</p>
+    </div>
+    <div>
+      <h3 class="text-sm font-semibold text-neutral-300 mb-2">衍生品 & 资金流</h3>
+      <table>
+        <tr><td>永续资金费率</td><td>中性偏负</td></tr>
+        <tr><td>未平仓 OI</td><td>~$25B（6 个月低位）</td></tr>
+        <tr><td>CME 基差</td><td>12% → 4–5% 年化</td></tr>
+        <tr><td>近期清算</td><td class="red">单日 &gt;$1.5B（多头）</td></tr>
+        <tr><td>ETF 单周流</td><td class="red">-$3.4B（纪录）</td></tr>
+        <tr><td>ETF 13 日累计</td><td class="red">-$4.33B / -59,351 BTC</td></tr>
+        <tr><td>订单簿深度比</td><td class="nodata">无数据</td></tr>
+      </table>
     </div>
   </div>
-  <div class="foot" style="margin-top:14px;border-top:1px solid #232323;padding-top:12px">
-    免责声明：本页由自动化脚本生成，所有内容仅供信息参考，<b>不构成任何投资建议</b>。本次为降级数据运行（无实时 API），数值可能与实时行情存在偏差。生成于 2026-06-01T23:42:00Z。
-  </div>
-</div>
+</section>
 
-</div>
+<!-- ④ 预测区（紫色） -->
+<section class="card p-5 mb-5 bg-purplecard">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-lg font-bold purple">短周期预测</h2>
+    <span class="chip" style="background:#3a2a10;color:#f7931a;">置信度 LOW · ⚠ 规则引擎降级</span>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+    <div class="card p-3"><div class="text-xs text-neutral-500">1H 区间</div><div class="font-bold">$59,800 – $61,300</div><div class="text-xs">上行概率 <b>42%</b></div></div>
+    <div class="card p-3"><div class="text-xs text-neutral-500">4H 区间</div><div class="font-bold">$59,000 – $61,700</div><div class="text-xs">上行概率 <b>40%</b></div></div>
+    <div class="card p-3"><div class="text-xs text-neutral-500">1D 区间</div><div class="font-bold">$57,350 – $62,600</div><div class="text-xs">上行概率 <b>38%</b></div></div>
+  </div>
+
+  <details class="card p-3" open>
+    <summary class="font-semibold purple">▾ 7 段中文叙述（点击折叠）</summary>
+    <div class="mt-3 text-sm text-neutral-300">
+      <div class="seg"><b>段1 · 市场总览</b><br>推理：BTC 自周内高点回落约 17%，失守 $62,000、$61,000 心理位，触四个月低位；ETF 13 日净流出 $4.33B、OI 降至六个月低位、清算逾 $1.5B，宏观与机构同向 risk-off。<br>结论：趋势偏空，但 RSI 深度超卖暗示下行动能趋缓。</div>
+      <div class="seg"><b>段2 · 15m 微观结构</b><br>推理：1h 级别卖压量能递减，$59,100 多次破位失败，短线买盘在 $60,000–$60,500 区域试探承接。<br>结论：超短线区间震荡偏弱，未见放量破位。</div>
+      <div class="seg"><b>段3 · 1h 结构</b><br>推理：RSI(14)≈16 极度超卖（权重×2，-2），MACD 柱持续为负（-1），价格低于均线集群（-1），1h 方向得分 -4≤-3 → 偏空；但超卖区背离风险升高。<br>结论：1h 偏空但易现技术性反弹。</div>
+      <div class="seg"><b>段4 · 1h 预测</b><br>区间 $59,800–$61,300，上行概率 42%。触发做多：收复 $61,800 站稳、RSI 回升至 30 上方；触发做空：跌破 $59,100，目标 $58,000。ATR_1h≈$750，偏空中枢下移 0.3ATR。</div>
+      <div class="seg"><b>段5 · 4h 预测</b><br>区间 $59,000–$61,700，上行概率 40%。触发做多：4h 收盘重返 $63,500 且量能配合、ETF 当日转净流入；触发做空：有效跌破 $59,100，目标 $56,000。ATR_4h≈$1,350。</div>
+      <div class="seg"><b>段6 · 1d 预测</b><br>区间 $57,350–$62,600，上行概率 38%。触发做多：日线收复 $65,000 且 ETF 净流入转正、资金费率回正；触发做空：日线收于 $58,000 下、跌穿止损聚集带，目标 $56,000 / $54,000。ATR_1d≈$2,625。</div>
+      <div class="seg"><b>段7 · 风险提示</b><br>风险：① 规则引擎降级（无 K 线本地计算），区间为规则推演；② Mt.Gox 后续转币与 ETF 流向可瞬时改变方向；③ 深度超卖反弹与趋势延续并存，宜双向防风险。<br><span class="text-neutral-500">（非投资建议）</span></div>
+    </div>
+  </details>
+</section>
+
+<!-- ⑤ 新闻时间轴 -->
+<section class="card p-5 mb-5">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-lg font-bold orange">新闻 · 政策时间轴</h2>
+    <div class="flex gap-2 text-xs" id="newstabs">
+      <button data-f="all" class="chip bg-neutral-700 text-white">全部</button>
+      <button data-f="high" class="chip" style="background:#3a1010;color:#ef4444;">高影响</button>
+      <button data-f="market" class="chip" style="background:#1f1f1f;">市场</button>
+      <button data-f="regulation" class="chip" style="background:#1f1f1f;">监管</button>
+    </div>
+  </div>
+  <div class="space-y-4" id="newslist">
+    <div class="tl-item news" data-cat="market high"><div class="text-xs text-neutral-500">2026-06-04 · CoinDesk / BeInCrypto</div><div class="font-semibold">美国现货比特币 ETF 单周净流出 $3.4B 创纪录 <span class="chip red">高</span></div><div class="text-sm text-neutral-400">5/15–6/3 连续 13 日净流出累计 $4.33B / 59,351 BTC；BlackRock、Fidelity、Grayscale 均现大额赎回。</div></div>
+    <div class="tl-item news" data-cat="market high"><div class="text-xs text-neutral-500">2026-06-05 · CryptoTimes / CryptoBriefing</div><div class="font-semibold">BTC 失守 $62,000 触四个月低位，单日清算逾 $1.5B <span class="chip red">高</span></div><div class="text-sm text-neutral-400">广泛多头爆仓，OI 降至六个月低位约 $25B，资金费率转中性偏负。</div></div>
+    <div class="tl-item news" data-cat="market high"><div class="text-xs text-neutral-500">2026-06-02 · 多源</div><div class="font-semibold">Mt.Gox 破产清算转移 10,306 BTC（约 $731M）<span class="chip red">高</span></div><div class="text-sm text-neutral-400">重燃债权人分发担忧，叠加 Strategy 减持传闻打压情绪。</div></div>
+    <div class="tl-item news" data-cat="regulation high"><div class="text-xs text-neutral-500">2026-06 · SEC.gov / Bitcoin Magazine</div><div class="font-semibold">SEC 发布 2026–2030 战略规划，明确数字资产为监管优先 <span class="chip red">高</span></div><div class="text-sm text-neutral-400">主席 Atkins 称将「划清清晰界限」，澄清联邦证券法对加密资产的适用。</div></div>
+    <div class="tl-item news" data-cat="regulation"><div class="text-xs text-neutral-500">2026-06 · The Block / Latham</div><div class="font-semibold">美国市场结构改革推进，SEC 与 CFTC 监管分工成焦点 <span class="chip" style="background:#3a2a10;color:#f7931a;">中</span></div><div class="text-sm text-neutral-400">立法草案聚焦「证券 vs 商品」清晰定义，被视为 2026 年标志性议题。</div></div>
+    <div class="tl-item news" data-cat="market"><div class="text-xs text-neutral-500">2026-06-01 · CoinDesk</div><div class="font-semibold">BTC、ETH 6 月红盘开局，期货市场仍显风险偏好 <span class="chip" style="background:#3a2a10;color:#f7931a;">中</span></div><div class="text-sm text-neutral-400">XLM、HYPE 逆势上涨。</div></div>
+    <div class="tl-item news" data-cat="market"><div class="text-xs text-neutral-500">2026-06 · 多源</div><div class="font-semibold">Stellar XLM 因 DTCC 选用其网络做代币化证券平台单日 +40% <span class="chip" style="background:#3a2a10;color:#f7931a;">中</span></div><div class="text-sm text-neutral-400">华尔街多链代币化战略信号，利好公链应用。</div></div>
+  </div>
+</section>
+
+<!-- ⑥ 技术链上 -->
+<section class="card p-5 mb-5">
+  <h2 class="text-lg font-bold orange mb-3">技术 · 链上</h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div class="card p-3"><div class="text-xs text-neutral-500">全网算力</div><div class="font-semibold">~895 EH/s</div></div>
+    <div class="card p-3"><div class="text-xs text-neutral-500">下次难度调整</div><div class="font-semibold red">≈ -9.9%</div><div class="text-xs text-neutral-500">预计 6/13</div></div>
+    <div class="card p-3"><div class="text-xs text-neutral-500">当前难度</div><div class="font-semibold">138.96T → 125.19T</div></div>
+    <div class="card p-3"><div class="text-xs text-neutral-500">链上费率 sat/vB</div><div class="nodata">无数据</div></div>
+  </div>
+  <div class="grid md:grid-cols-2 gap-3 mt-3">
+    <div class="card p-3 text-sm"><div class="text-neutral-300 font-semibold mb-1">矿工经济</div><div class="text-neutral-400">后减半周期，难度向下调整以恢复低效矿机盈利；价格回落叠加难度下修，矿工利润承压。</div></div>
+    <div class="card p-3 text-sm"><div class="text-neutral-300 font-semibold mb-1">L2 / 铭文活跃</div><div class="text-neutral-400">Lightning / 铭文：<span class="nodata">本期无可靠数据，按低活跃度处理</span>。</div></div>
+  </div>
+</section>
+
+<!-- ⑦ 底部 -->
+<footer class="card p-5 mb-8 text-xs text-neutral-500">
+  <div class="mb-2"><b class="text-neutral-300">数据质量：</b> 模式 web_fallback（本地快照缺失）；价格多源交叉（CoinGecko/CMC/OKX/Kraken/Coinbase）；订单簿、链上费率、taker 比缺失填「无数据」；ETF / 清算 / OI 来自财经媒体二手汇总。</div>
+  <div class="mb-2"><b class="text-neutral-300">来源：</b>
+    <a class="underline" href="https://coinmarketcap.com/currencies/bitcoin/">CoinMarketCap</a> ·
+    <a class="underline" href="https://www.coingecko.com/en/coins/bitcoin">CoinGecko</a> ·
+    <a class="underline" href="https://www.coingecko.com/en/coins/solana">CoinGecko SOL</a> ·
+    <a class="underline" href="https://beincrypto.com/bitcoin-etf-outflows-record-streak-june-2026/">BeInCrypto ETF</a> ·
+    <a class="underline" href="https://coinfomania.com/bitcoin-etf-outflows-june-2026-record-selloff/">Coinfomania</a> ·
+    <a class="underline" href="https://www.cryptotimes.io/2026/06/03/bitcoin-price-drops-below-66000-while-massive-selloff-leads-1-86b-in-liquidations/">CryptoTimes 清算</a> ·
+    <a class="underline" href="https://phemex.com/blogs/bitcoin-open-interest-hits-6-month-low-june-outlook">Phemex OI</a> ·
+    <a class="underline" href="https://news.bitcoin.com/rsi-crashes-to-16-as-bitcoin-consolidates-near-61000-after-59-1k-low/">Bitcoin.com RSI</a> ·
+    <a class="underline" href="https://www.sec.gov/newsroom/press-releases/2026-30-sec-clarifies-application-federal-securities-laws-crypto-assets">SEC</a> ·
+    <a class="underline" href="https://newhedge.io/bitcoin/difficulty-estimator">Newhedge 难度</a> ·
+    <a class="underline" href="https://www.coinwarz.com/mining/bitcoin/hashrate-chart">CoinWarz 算力</a>
+  </div>
+  <div class="text-neutral-600">⚠ 本页为自动生成的信息聚合，仅供参考，<b>不构成任何投资建议</b>。加密资产波动剧烈，请自行核实并谨慎决策。</div>
+</footer>
+
 <script>
-function filterNews(f,el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
-  document.querySelectorAll('.news-item').forEach(n=>{n.style.display=(f==='all'||n.dataset.impact===f)?'flex':'none';});
-}
-new Chart(document.getElementById('priceChart'),{type:'line',
-  data:{labels:["5/25", "5/26", "5/27", "5/28", "5/29", "5/30", "5/31", "6/01"],datasets:[{label:'BTC 收盘(近似)',data:[76200, 75500, 75100, 74300, 74651, 73900, 73400, 73038],
-    borderColor:'#f7931a',backgroundColor:'rgba(247,147,26,.12)',fill:true,tension:.3,pointRadius:3}]},
-  options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#888'},grid:{color:'#1c1c1c'}},y:{ticks:{color:'#888'},grid:{color:'#1c1c1c'}}}}});
-new Chart(document.getElementById('etfChart'),{type:'bar',
-  data:{labels:["5\u6708\u51c0\u6d41(\u4ebf$)", "\u8fd110\u65e5\u8fde\u6d41(\u4ebf$)"],datasets:[{label:'净流(亿$)',data:[-23.0, -29.7],
-    backgroundColor:['#ef4444','#ef4444']}]},
-  options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#888'},grid:{display:false}},y:{ticks:{color:'#888'},grid:{color:'#1c1c1c'}}}}});
-</script></body></html>
+  document.getElementById('asof').textContent = '2026-06-07 07:30 (Asia/Taipei) · 数据截至 2026-06-07 02:00Z';
+  const tabs=document.getElementById('newstabs');
+  tabs.addEventListener('click',e=>{
+    if(e.target.tagName!=='BUTTON')return;
+    const f=e.target.dataset.f;
+    [...tabs.children].forEach(b=>b.classList.remove('ring-2','ring-white'));
+    e.target.classList.add('ring-2','ring-white');
+    document.querySelectorAll('#newslist .news').forEach(n=>{
+      const cats=n.dataset.cat;
+      n.classList.toggle('newshide', !(f==='all'||cats.includes(f)));
+    });
+  });
+</script>
+</body>
+</html>
